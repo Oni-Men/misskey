@@ -851,6 +851,7 @@ common/views/widgets/broadcast.vue:
   have-a-nice-day: "良い一日を！"
   next: "次"
   prev: "前"
+  detail: "詳細"
 
 common/views/widgets/calendar.vue:
   year: "{}年"
