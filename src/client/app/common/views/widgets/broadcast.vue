@@ -15,15 +15,18 @@
 					<path class="wave d" d="M29.18,1.06c-0.479-0.502-1.273-0.522-1.775-0.044c-0.016,0.015-0.029,0.029-0.045,0.044c-0.5,0.52-0.5,1.36,0,1.88 c1.361,1.4,2.041,3.24,2.041,5.08s-0.68,3.66-2.041,5.08c-0.5,0.52-0.5,1.36,0,1.88c0.509,0.508,1.332,0.508,1.841,0 c1.86-1.92,2.8-4.44,2.8-6.96C31.99,5.424,30.98,2.931,29.18,1.06z"></path>
 				</svg>
 			</div>
-			<p class="fetching" v-if="fetching">{{ $t('fetching') }}<mk-ellipsis/></p>
-			<h1 v-if="!fetching">{{ announcements.length == 0 ? $t('no-broadcasts') : announcements[i].title }}</h1>
-			<p v-if="!fetching">
-				<mfm v-if="announcements.length != 0" :text="announcements[i].text" :key="i"/>
-				<img v-if="announcements.length != 0 && announcements[i].image" :src="announcements[i].image" alt="" style="display: block; max-height: 130px; max-width: 100%;"/>
-				<template v-if="announcements.length == 0">{{ $t('have-a-nice-day') }}</template>
-			</p>
-			<div class="turn-page" v-if="announcements.length > 1">
+			<div class="article">
+				<p class="fetching" v-if="fetching">{{ $t('fetching') }}<mk-ellipsis/></p>
+				<h1 v-if="!fetching">{{ announcements.length == 0 ? $t('no-broadcasts') : announcements[i].title }}</h1>
+				<p v-if="!fetching">
+					<mfm v-if="announcements.length != 0" :text="announcements[i].text" :key="i"/>
+					<img v-if="announcements.length != 0 && announcements[i].image" :src="announcements[i].image" alt="" style="display: block; max-height: 130px; max-width: 100%;"/>
+					<template v-if="announcements.length == 0">{{ $t('have-a-nice-day') }}</template>
+				</p>
+			</div>
+			<div class="slider" v-if="announcements.length > 1">
 				<a class="prev" @click="prev"><fa :icon="faChevronLeft" fixed-width/> {{ $t('prev') }}</a>
+				<a class="detail" @click="detail"><fa :icon="faInfoCircle" fixed-width/> {{ $t('detail') }}</a>
 				<a class="next" @click="next">{{ $t('next') }} <fa :icon="faChevronRight" fixed-width/></a>
 			</div>
 		</div>
@@ -34,7 +37,7 @@
 <script lang="ts">
 import define from '../../../common/define-widget';
 import i18n from '../../../i18n';
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 export default define({
 	name: 'broadcast',
@@ -71,6 +74,9 @@ export default define({
 			} else {
 				this.i--;
 			}
+		},
+		detail(){
+
 		},
 		func() {
 			if (this.props.design == 1) {
@@ -140,31 +146,43 @@ export default define({
 					10%
 						opacity 1
 
-	> h1
-		margin 0
-		font-size 0.95em
-		font-weight normal
-		color var(--announcementsTitle)
+	> .article
+		width 100%
+		height 150px
+		overflow hidden
 
-	> p
+		> h1
+			margin 0
+			font-size 0.95em
+			font-weight normal
+			color var(--announcementsTitle)
+
+		> p
+			display block
+			z-index 1
+			margin 0
+			font-size 0.7em
+			color var(--announcementsText)
+
+			&.fetching
+				text-align center
+
+	.slider
 		display block
-		z-index 1
-		margin 0
-		font-size 0.7em
-		color var(--announcementsText)
+		font-size 0.75em
 
-		&.fetching
-			text-align center
-
-	.turn-page
-		display block
-		font-size 0.7em
-
-		> .prev
+		> a
+			width 33.3%
 			float left
 
+		> .prev
+			text-align left
+
+		> .detail
+			text-align center
+
 		> .next
-			float right
+			text-align right
 
 	&[data-mobile]
 		> p
