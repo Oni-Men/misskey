@@ -26,7 +26,7 @@
 			</div>
 			<div class="slider" v-if="announcements.length > 1">
 				<a class="prev" @click="prev"><fa :icon="faChevronLeft" fixed-width/> {{ $t('prev') }}</a>
-				<a class="detail" @click="detail"><fa :icon="faInfoCircle" fixed-width/> {{ $t('detail') }}</a>
+				<a class="detail" @click="detail"><fa icon="info-circle"> {{ $t('detail') }}</a>
 				<a class="next" @click="next">{{ $t('next') }} <fa :icon="faChevronRight" fixed-width/></a>
 			</div>
 		</div>
@@ -37,7 +37,7 @@
 <script lang="ts">
 import define from '../../../common/define-widget';
 import i18n from '../../../i18n';
-import { faChevronLeft, faChevronRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 export default define({
 	name: 'broadcast',
@@ -51,7 +51,7 @@ export default define({
 			i: 0,
 			fetching: true,
 			announcements: [],
-			faChevronLeft, faChevronRight, faInfoCircle
+			faChevronLeft, faChevronRight
 		};
 	},
 	mounted() {
