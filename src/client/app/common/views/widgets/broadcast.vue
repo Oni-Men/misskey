@@ -51,7 +51,7 @@ export default define({
 			i: 0,
 			fetching: true,
 			announcements: [],
-			faChevronLeft, faChevronRight
+			faChevronLeft, faChevronRight, faInfoCircle
 		};
 	},
 	mounted() {
