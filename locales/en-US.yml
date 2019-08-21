@@ -814,6 +814,8 @@ common/views/widgets/broadcast.vue:
   no-broadcasts: "No announcements"
   have-a-nice-day: "Have a nice day!"
   next: "Next"
+  prev: "Previous"
+  detail: "Read more"
 common/views/widgets/calendar.vue:
   year: "Year {}"
   month: "{},"
