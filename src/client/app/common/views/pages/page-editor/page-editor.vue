@@ -232,21 +232,21 @@ export default Vue.extend({
 				eyeCatchingImageId: this.eyeCatchingImageId,
 			};
 
-			function onError(err) {
+			const onError = (err) => {
 				if (err.id == '3d81ceae-475f-4600-b2a8-2bc116157532') {
-						if (err.info.param == 'name') {
-							this.$root.dialog({
-								type: 'error',
-								title: this.$t('title-invalid-name'),
-								text: this.$t('text-invalid-name')
-							});
-						}
-					} else if (err.code == 'NAME_ALREADY_EXISTS') {
+					if (err.info.param == 'name') {
 						this.$root.dialog({
 							type: 'error',
-							text: this.$t('name-already-exists')
+							title: this.$t('title-invalid-name'),
+							text: this.$t('text-invalid-name')
 						});
 					}
+				} else if (err.code == 'NAME_ALREADY_EXISTS') {
+					this.$root.dialog({
+						type: 'error',
+						text: this.$t('name-already-exists')
+					});
+				}
 			}
 
 			if (this.pageId) {
