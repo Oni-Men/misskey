@@ -10,8 +10,9 @@ import { User } from '../../../../models/entities/user';
 import { Users, DriveFiles, Notes } from '../../../../models';
 import { DriveFile } from '../../../../models/entities/drive-file';
 import { Note } from '../../../../models/entities/note';
+import { DB_MAX_NOTE_TEXT_LENGTH } from '../../../../misc/hard-limits';
 
-let maxNoteTextLength = 1000;
+let maxNoteTextLength = 500;
 
 setInterval(() => {
 	fetchMeta().then(m => {
@@ -20,15 +21,13 @@ setInterval(() => {
 }, 3000);
 
 export const meta = {
-	stability: 'stable',
-
 	desc: {
 		'ja-JP': '投稿します。'
 	},
 
 	tags: ['notes'],
 
-	requireCredential: true,
+	requireCredential: true as const,
 
 	limit: {
 		duration: ms('1hour'),
@@ -55,7 +54,9 @@ export const meta = {
 
 		text: {
 			validator: $.optional.nullable.str.pipe(text =>
-				length(text.trim()) <= maxNoteTextLength && text.trim() != ''
+				text.trim() != ''
+					&& length(text.trim()) <= maxNoteTextLength
+					&& Array.from(text.trim()).length <= DB_MAX_NOTE_TEXT_LENGTH	// DB limit
 			),
 			default: null as any,
 			desc: {
@@ -108,23 +109,6 @@ export const meta = {
 			desc: {
 				'ja-JP': '本文からカスタム絵文字を展開しないか否か。'
 			}
-		},
-
-		geo: {
-			validator: $.optional.nullable.obj({
-				coordinates: $.arr().length(2)
-					.item(0, $.num.range(-180, 180))
-					.item(1, $.num.range(-90, 90)),
-				altitude: $.nullable.num,
-				accuracy: $.nullable.num,
-				altitudeAccuracy: $.nullable.num,
-				heading: $.nullable.num.range(0, 360),
-				speed: $.nullable.num
-			}).strict(),
-			desc: {
-				'ja-JP': '位置情報'
-			},
-			ref: 'geo'
 		},
 
 		fileIds: {
@@ -305,7 +289,6 @@ export default define(meta, async (ps, user, app) => {
 		apMentions: ps.noExtractMentions ? [] : undefined,
 		apHashtags: ps.noExtractHashtags ? [] : undefined,
 		apEmojis: ps.noExtractEmojis ? [] : undefined,
-		geo: ps.geo
 	});
 
 	return {

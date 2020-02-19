@@ -65,7 +65,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 	public schema: Schema;
 	protected repository: Repository<Log>;
 	protected abstract genNewLog(latest: T): DeepPartial<T>;
-	protected abstract async fetchActual(group?: string): Promise<DeepPartial<T>>;
+	protected abstract async fetchActual(group: string | null): Promise<DeepPartial<T>>;
 
 	@autobind
 	private static convertSchemaToFlatColumnDefinitions(schema: Schema) {
@@ -122,7 +122,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 
 		for (const [k, v] of Object.entries(columns)) {
 			if (v > 0) query[k] = () => `"${k}" + ${v}`;
-			if (v < 0) query[k] = () => `"${k}" - ${v}`;
+			if (v < 0) query[k] = () => `"${k}" - ${Math.abs(v)}`;
 		}
 
 		return query;
@@ -272,15 +272,15 @@ export default abstract class Chart<T extends Record<string, any>> {
 				latest as Record<string, any>);
 
 			// 空ログデータを作成
-			data = await this.getNewLog(obj);
+			data = this.getNewLog(obj);
 		} else {
 			// ログが存在しなかったら
-			// (Misskeyインスタンスを建てて初めてのチャート更新時)
+			// (Misskeyインスタンスを建てて初めてのチャート更新時など)
 
 			// 初期ログデータを作成
-			data = await this.getNewLog(null);
+			data = this.getNewLog(null);
 
-			logger.info(`${this.name}: Initial commit created`);
+			logger.info(`${this.name + (group ? `:${group}` : '')} (${span}): Initial commit created`);
 		}
 
 		try {
@@ -291,12 +291,15 @@ export default abstract class Chart<T extends Record<string, any>> {
 				date: Chart.dateToTimestamp(current),
 				...Chart.convertObjectToFlattenColumns(data)
 			});
+
+			logger.info(`${this.name + (group ? `:${group}` : '')} (${span}): New commit created`);
 		} catch (e) {
 			// duplicate key error
 			// 並列動作している他のチャートエンジンプロセスと処理が重なる場合がある
 			// その場合は再度最も新しいログを持ってくる
 			if (isDuplicateKeyValueError(e)) {
 				log = await this.getLatestLog(span, group) as Log;
+				logger.info(`${this.name + (group ? `:${group}` : '')} (${span}): Commit duplicated`);
 			} else {
 				logger.error(e);
 				throw e;
@@ -331,6 +334,24 @@ export default abstract class Chart<T extends Record<string, any>> {
 			await this.repository.createQueryBuilder()
 				.update()
 				.set(query)
+				.where('id = :id', { id: log.id })
+				.execute();
+		};
+
+		return Promise.all([
+			this.getCurrentLog('day', group).then(log => update(log)),
+			this.getCurrentLog('hour', group).then(log => update(log)),
+		]);
+	}
+
+	@autobind
+	public async resync(group: string | null = null): Promise<any> {
+		const data = await this.fetchActual(group);
+
+		const update = async (log: Log) => {
+			await this.repository.createQueryBuilder()
+				.update()
+				.set(Chart.convertObjectToFlattenColumns(data))
 				.where('id = :id', { id: log.id })
 				.execute();
 		};

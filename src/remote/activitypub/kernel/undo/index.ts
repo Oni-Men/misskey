@@ -1,8 +1,9 @@
 import { IRemoteUser } from '../../../../models/entities/user';
-import { IUndo, IFollow, IBlock, ILike } from '../../type';
+import { IUndo, IFollow, IBlock, ILike, IAnnounce } from '../../type';
 import unfollow from './follow';
 import unblock from './block';
 import undoLike from './like';
+import { undoAnnounce } from './announce';
 import Resolver from '../../resolver';
 import { apLogger } from '../../logger';
 
@@ -19,14 +20,10 @@ export default async (actor: IRemoteUser, activity: IUndo): Promise<void> => {
 
 	const resolver = new Resolver();
 
-	let object;
-
-	try {
-		object = await resolver.resolve(activity.object);
-	} catch (e) {
+	const object = await resolver.resolve(activity.object).catch(e => {
 		logger.error(`Resolution failed: ${e}`);
 		throw e;
-	}
+	});
 
 	switch (object.type) {
 		case 'Follow':
@@ -36,7 +33,12 @@ export default async (actor: IRemoteUser, activity: IUndo): Promise<void> => {
 			unblock(actor, object as IBlock);
 			break;
 		case 'Like':
+		case 'EmojiReaction':
+		case 'EmojiReact':
 			undoLike(actor, object as ILike);
+			break;
+		case 'Announce':
+			undoAnnounce(actor, object as IAnnounce);
 			break;
 	}
 };

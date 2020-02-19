@@ -1,5 +1,5 @@
 import * as Koa from 'koa';
-import * as Router from 'koa-router';
+import * as Router from '@koa/router';
 import * as request from 'request';
 import { OAuth2 } from 'oauth';
 import config from '../../../config';
@@ -12,11 +12,11 @@ import { Users, UserProfiles } from '../../../models';
 import { ILocalUser } from '../../../models/entities/user';
 import { ensure } from '../../../prelude/ensure';
 
-function getUserToken(ctx: Koa.BaseContext) {
+function getUserToken(ctx: Koa.Context) {
 	return ((ctx.headers['cookie'] || '').match(/i=(\w+)/) || [null, null])[1];
 }
 
-function compareOrigin(ctx: Koa.BaseContext) {
+function compareOrigin(ctx: Koa.Context) {
 	function normalizeUrl(url: string) {
 		return url ? url.endsWith('/') ? url.substr(0, url.length - 1) : url : '';
 	}
@@ -46,16 +46,12 @@ router.get('/disconnect/discord', async ctx => {
 		token: userToken
 	}).then(ensure);
 
-	await UserProfiles.update({
-		userId: user.id
-	}, {
-		discord: false,
-		discordAccessToken: null,
-		discordRefreshToken: null,
-		discordExpiresDate: null,
-		discordId: null,
-		discordUsername: null,
-		discordDiscriminator: null,
+	const profile = await UserProfiles.findOne(user.id).then(ensure);
+
+	delete profile.integrations.discord;
+
+	await UserProfiles.update(user.id, {
+		integrations: profile.integrations,
 	});
 
 	ctx.body = `Discordの連携を解除しました :v:`;
@@ -203,7 +199,7 @@ router.get('/dc/cb', async ctx => {
 		}
 
 		const profile = await UserProfiles.createQueryBuilder()
-			.where('"discordId" = :id', { id: id })
+			.where('"integrations"->"discord"->"id" = :id', { id: id })
 			.andWhere('"userHost" IS NULL')
 			.getOne();
 
@@ -212,13 +208,17 @@ router.get('/dc/cb', async ctx => {
 			return;
 		}
 
-		await UserProfiles.update({ userId: profile.userId }, {
-			discord: true,
-			discordAccessToken: accessToken,
-			discordRefreshToken: refreshToken,
-			discordExpiresDate: expiresDate,
-			discordUsername: username,
-			discordDiscriminator: discriminator
+		await UserProfiles.update(profile.userId, {
+			integrations: {
+				...profile.integrations,
+				discord: {
+					accessToken: accessToken,
+					refreshToken: refreshToken,
+					expiresDate: expiresDate,
+					username: username,
+					discriminator: discriminator
+				}
+			},
 		});
 
 		signin(ctx, await Users.findOne(profile.userId) as ILocalUser, true);
@@ -284,14 +284,20 @@ router.get('/dc/cb', async ctx => {
 			token: userToken
 		}).then(ensure);
 
-		await UserProfiles.update({ userId: user.id }, {
-			discord: true,
-			discordAccessToken: accessToken,
-			discordRefreshToken: refreshToken,
-			discordExpiresDate: expiresDate,
-			discordId: id,
-			discordUsername: username,
-			discordDiscriminator: discriminator
+		const profile = await UserProfiles.findOne(user.id).then(ensure);
+
+		await UserProfiles.update(user.id, {
+			integrations: {
+				...profile.integrations,
+				discord: {
+					accessToken: accessToken,
+					refreshToken: refreshToken,
+					expiresDate: expiresDate,
+					id: id,
+					username: username,
+					discriminator: discriminator
+				}
+			}
 		});
 
 		ctx.body = `Discord: @${username}#${discriminator} を、Misskey: @${user.username} に接続しました！`;

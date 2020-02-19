@@ -14,7 +14,7 @@ export const meta = {
 
 	tags: ['lists', 'users'],
 
-	requireCredential: true,
+	requireCredential: true as const,
 
 	kind: 'write:account',
 
@@ -65,7 +65,7 @@ export default define(meta, async (ps, me) => {
 	});
 
 	// Pull the user
-	await UserListJoinings.delete({ userId: user.id });
+	await UserListJoinings.delete({ userListId: userList.id, userId: user.id });
 
 	publishUserListStream(userList.id, 'userRemoved', await Users.pack(user));
 });

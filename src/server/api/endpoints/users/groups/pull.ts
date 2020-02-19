@@ -13,7 +13,7 @@ export const meta = {
 
 	tags: ['groups', 'users'],
 
-	requireCredential: true,
+	requireCredential: true as const,
 
 	kind: 'write:user-groups',
 
@@ -74,5 +74,5 @@ export default define(meta, async (ps, me) => {
 	}
 
 	// Pull the user
-	await UserGroupJoinings.delete({ userId: user.id });
+	await UserGroupJoinings.delete({ userGroupId: userGroup.id, userId: user.id });
 });

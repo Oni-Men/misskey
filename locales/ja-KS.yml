@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 meta:
   lang: "日本語 (関西弁)"
 common:
@@ -1049,230 +1050,165 @@ desktop/views/pages/user/user.header.vue:
   years-old: "{age}歳"
   year: "年"
   month: "月"
+=======
+_lang_: "日本語 (関西弁)"
+introMisskey: "ようこそ！Misskeyは、オープンソースの分散型マイクロブログサービスやねん。\n「ノート」を作成しぃ、いま起こっとることを共有したり、あんたについて皆に発信しよう📡\n「リアクション」機能で、皆のノートに素はよ反応を追加することもできます✌\n新しい世界を探検しよう🚀"
+monthAndDay: "{month}月 {day}日"
+search: "探す"
+notifications: "通知"
+username: "ユーザー名"
+password: "パスワード"
+fetchingAsApObject: "連合に照会中"
+ok: "おっけー"
+gotIt: "ほい"
+cancel: "やめとくわ"
+enterUsername: "ユーザー名を入れてや"
+renotedBy: "{user}がRenote"
+noNotes: "ノートはあらへん"
+noNotifications: "通知はあらへん"
+instance: "インスタンス"
+settings: "設定"
+profile: "プロフィール"
+timeline: "タイムライン"
+noAccountDescription: "自己紹介はあらへん"
+login: "ログイン"
+loggingIn: "ログインしとります"
+logout: "ログアウト"
+signup: "新規登録"
+uploading: "アップロードしとります"
+save: "保存"
+users: "ユーザー"
+addUser: "ユーザー増やす"
+favorite: "お気に入り"
+favorites: "お気に入り"
+unfavorite: "お気に入りやめる"
+pin: "ピン留め"
+unpin: "ピン留めやめる"
+copyContent: "内容をコピー"
+copyLink: "リンクをコピー"
+delete: "ほかす"
+addToList: "リストに入れたる"
+reply: "返す"
+loadMore: "もっとあるやろ！"
+mentions: "あんた宛て"
+directNotes: "ダイレクト投稿"
+import: "インポート"
+export: "エクスポート"
+files: "ファイル"
+download: "ダウンロード"
+lists: "リスト"
+noLists: "リストはあらへん"
+followsYou: "フォローされとるで"
+error: "問題が発生してん"
+enterListName: "リスト名を入れてや"
+privacy: "プライバシーってなんや？オカンの年齢か？"
+makeFollowManuallyApprove: "他人のフォローは許可してからや！"
+defaultNoteVisibility: "もとからの公開範囲"
+follow: "フォロー"
+followRequest: "フォロー許してくれや！言うてみる"
+followRequests: "フォロー許してくれや！"
+followRequestPending: "フォロー許してくれるん待っとる"
+enterEmoji: "絵文字を入れてや"
+you: "あんた"
+clickToShow: "押してみ、見せたるわ"
+sensitive: "見たらあかんで"
+add: "増やす"
+reaction: "リアクション"
+renameFile: "ファイル名をいらう"
+attachCancel: "くっつけるのやめよか"
+markAsSensitive: "ちょっと見せられへんわ"
+unmarkAsSensitive: "別にええんじゃね？"
+enterFileName: "ファイル名を入れてや"
+mute: "ミュート"
+unmute: "ミュートやめたる"
+block: "ブロック"
+unblock: "ブロックやめたる"
+suspend: "凍結"
+unsuspend: "溶かす"
+customEmojis: "カスタム絵文字"
+cacheRemoteFiles: "リモートのファイルをキャッシュする"
+cacheRemoteFilesDescription: "この設定をチャラにすると、リモートファイルをキャッシュせず直リンクするようになります。サーバーのストレージを節約できますが、サムネイルが生成されへんので通信量が増加します。"
+loginFailed: "ログインに失敗してん"
+wallpaper: "壁紙"
+removeWallpaper: "壁紙ほかす"
+youHaveNoLists: "リストはあらへん"
+proxyAccountDescription: "プロキシアカウントは、代わりにフォローしてくれるアカウントや。例えば、551に豚まんが無いときやったり、ユーザーがリモートユーザーをアカウントに入れたとき、リストに入れられたユーザーが誰からもフォローされてないと寂しいやん。寂しいし、アクティビティも配達されへんから、プロキシアカウントがフォローしてくれるで。ええやつやん…"
+host: "ホスト"
+federation: "連合"
+instances: "インスタンス"
+charts: "チャート"
+perHour: "1時間ごと"
+perDay: "1日ごと"
+operations: "操作"
+version: "バージョン"
+network: "ネットワーク"
+statistics: "統計"
+clearQueueConfirmText: "未配達の投稿は配送されなくなるで。通常この操作を行う必要はあらへんや。"
+muteAndBlock: "ミュートとブロック"
+noUsers: "ユーザーはおらへん"
+pinLimitExceeded: "これ以上ピン留めできひん"
+intro: "Misskeyのインストールが完了してん！管理者アカウントを作ってや。"
+noCustomEmojis: "絵文字はあらへん"
+noJobs: "ジョブはあらへん"
+all: "みな"
+retypedNotMatch: "そやないねん。"
+remove: "ほかす"
+noMoreHistory: "これより過去の履歴はあらへんで"
+nsfw: "見たらあかんで"
+userList: "リスト"
+about: "情報"
+aboutMisskey: "Misskeyってなんや？"
+notFoundDescription: "指定されたURLに該当するページはあらへんやった。"
+close: "さいなら"
+joinedGroups: "参加しとるグループ"
+_ago:
+  unknown: "謎"
+  future: "未来"
+  justNow: "たった今"
+  secondsAgo: "{n}秒前"
+  minutesAgo: "{n}分前"
+  hoursAgo: "{n}時間前"
+  daysAgo: "{n}日前"
+  weeksAgo: "{n}週間前"
+  monthsAgo: "{n}ヶ月前"
+  yearsAgo: "{n}年前"
+_time:
+  second: "秒"
+  minute: "分"
+  hour: "時間"
+>>>>>>> upstream/develop
   day: "日"
-  follows-you: "フォローされとるで"
-desktop/views/pages/user/user.timeline.vue:
-  default: "投稿"
-  with-replies: "投稿と返信"
-  with-media: "メディア"
-desktop/views/widgets/notifications.vue:
-  title: "通知"
-desktop/views/widgets/polls.vue:
-  title: "アンケート"
-  refresh: "他を見る"
-  nothing: "あらへん！"
-desktop/views/widgets/post-form.vue:
-  title: "投稿"
-  note: "投稿"
-desktop/views/widgets/profile.vue:
-  update-banner: "クリックしてバナー編集"
-  update-avatar: "クリックしてアバター編集"
-desktop/views/widgets/trends.vue:
-  title: "流行"
-  refresh: "他を見る"
-  nothing: "あらへん！"
-desktop/views/widgets/users.vue:
-  title: "おすすめユーザー"
-  refresh: "他を見る"
-  no-one: "おらん！"
-mobile/views/components/drive.vue:
-  used: "使うとる"
-  folder-count: "フォルダ"
-  count-separator: "、"
-  file-count: "ファイル"
-  nothing-in-drive: "ドライブには何もあらへんで。"
-  folder-is-empty: "このフォルダ何もないわ"
-  folder-name: "フォルダー名"
-  url-prompt: "このURLのファイルをアップロードしたいねん"
-  uploading: "アップロードをリクエストしたで。アップロードが完了するまで時間がかかるかも分からん、知らんけど。"
-mobile/views/components/drive-file-chooser.vue:
-  select-file: "ファイル選んでや"
-mobile/views/components/drive-folder-chooser.vue:
-  select-folder: "フォルダ選んでや"
-mobile/views/components/drive.file.vue:
-  nsfw: "ちょっと見せられへんわ"
-mobile/views/components/drive.file-detail.vue:
-  download: "ダウンロード"
-  rename: "名前を変えるで"
-  move: "移動"
-  hash: "ハッシュ(md5)"
-  exif: "EXIF"
-  nsfw: "ちょっと見せられへんわ"
-  mark-as-sensitive: "見たらあかん感じにしとく"
-  unmark-as-sensitive: "やっぱ見せたるわ"
-mobile/views/components/media-video.vue:
-  sensitive: "ちょっと見せられへんわ"
-  click-to-show: "押してみ、見せたるわ"
-common/views/components/follow-button.vue:
-  following: "フォローしとる"
-  follow: "フォロー"
-  request-pending: "フォロー許してくれるん待っとる"
-  follow-processing: "今フォロー処理やっとる‥"
-  follow-request: "フォローさせてや！言うてみる"
-mobile/views/components/note.vue:
-  private: "この投稿は見せられへんわ"
-  deleted: "この投稿なんか無くなってもうたわ"
-  location: "ここおるで:"
-mobile/views/components/note-detail.vue:
-  reply: "返す"
-  reaction: "リアクション"
-  private: "この投稿は見せられへんわ"
-  deleted: "この投稿なんか無くなってもうたわ"
-  location: "ここおるで:"
-mobile/views/components/note-preview.vue:
-  admin: "admin"
-  bot: "bot"
-  cat: "cat"
-mobile/views/components/note-sub.vue:
-  admin: "admin"
-  bot: "bot"
-  cat: "cat"
-mobile/views/components/notifications.vue:
-  empty: "あらへん！"
-mobile/views/components/sub-note-content.vue:
-  private: "この投稿は見せられへんわ"
-  deleted: "この投稿なんか無くなってもうたわ"
-  media-count: "{}つのメディア"
-  poll: "アンケート"
-mobile/views/components/ui.header.vue:
-  welcome-back: "おかえり、"
-  adjective: "はん"
-mobile/views/components/ui.nav.vue:
-  timeline: "タイムライン"
+_2fa:
+  alreadyRegistered: "もう設定終わっとるわ"
+_auth:
+  permissionAsk: "このアプリは次の権限を要求しとるで"
+_antennaSources:
+  all: "みなのノート"
+  homeTimeline: "フォローしとるユーザーのノート"
+_widgets:
   notifications: "通知"
-  follow-requests: "フォロー許してくれや！言うてみる"
-  search: "検索"
-  user-lists: "リスト"
-  widgets: "ウィジェット"
-  game: "ゲーム"
-  admin: "管理"
-  about: "Misskeyってなんや？"
-mobile/views/pages/drive.vue:
-  contextmenu:
-    upload: "ファイル上げる"
-    create-folder: "フォルダー作る"
-mobile/views/pages/signup.vue:
-  lets-start: "📦 始めようや"
-mobile/views/pages/followers.vue:
-  followers-of: "{name}のフォロワー"
-mobile/views/pages/following.vue:
-  following-of: "{name}のフォロー"
-mobile/views/pages/home.vue:
-  home: "ホーム"
-  local: "ローカル"
-  global: "グローバル"
-  mentions: "あんた宛て"
-  messages: "ダイレクト投稿"
-mobile/views/pages/tag.vue:
-  no-posts-found: "ハッシュタグ「{q}」が付けられた投稿はあらへんかった。"
-mobile/views/pages/widgets.vue:
-  dashboard: "ダッシュボード"
-  add-widget: "増やす"
-  customization-tips: "カスタマイズのヒント"
-mobile/views/pages/widgets/activity.vue:
-  activity: "やっとること"
-mobile/views/pages/share.vue:
-  share-with: "{name}で共有"
-mobile/views/pages/note.vue:
-  title: "投稿"
-  prev: "前のやつ"
-  next: "次のやつ"
-mobile/views/pages/games/reversi.vue:
-  reversi: "リバーシ"
-mobile/views/pages/search.vue:
-  search: "探す"
-  not-found: "ワイは「{q}」なんて投稿知らんわ、無いんちゃう？知らんけど。"
-mobile/views/pages/selectdrive.vue:
-  select-file: "ファイル選んでや"
-mobile/views/pages/notifications.vue:
-  notifications: "通知"
-mobile/views/pages/settings.vue:
-  signed-in-as: "あんたは橋の下で拾った{}や！"
-mobile/views/pages/user.vue:
-  follows-you: "フォローされとるで"
-  following: "フォロー"
-  followers: "フォロワー"
-  notes: "投稿"
-  overview: "こんなやつ"
   timeline: "タイムライン"
-  media: "メディア"
-  years-old: "{age}歳"
-mobile/views/pages/user/home.vue:
-  recent-notes: "最近儲かりまっか？"
-  images: "画像"
-  activity: "やっとること"
-  keywords: "キーワード"
-  domains: "よく出るドメイン"
-  frequently-replied-users: "よう話すツレ"
-  followers-you-know: "知っとるフォロワー"
-  last-used-at: "最後いつ来た？"
-mobile/views/pages/user/home.photos.vue:
-  no-photos: "写真はあらへんで"
-deck:
-  widgets: "ウィジェット"
-  home: "ホーム"
-  local: "ローカル"
-  hashtag: "ハッシュタグ"
-  global: "グローバル"
-  mentions: "あんた宛て"
-  direct: "ダイレクト投稿"
-  notifications: "通知"
-  list: "リスト"
-  swap-left: "左に移動や！"
-  swap-right: "右に移動や！"
-  swap-up: "上に移動や！"
-  swap-down: "下に移動や！"
-  remove: "カラムにさいなら"
-  add-column: "カラム増やす"
-  rename: "名前を変えるで"
-  stack-left: "左に重ねんで！"
-  pop-right: "右に出すで！"
-deck/deck.tl-column.vue:
-  is-media-only: "メディア投稿だけや"
-  edit: "オプション"
-deck/deck.user-column.vue:
-  follows-you: "フォローされとるで"
-  posts: "投稿"
-  following: "フォロー"
-  followers: "フォロワー"
-  images: "画像"
-  activity: "アクティビティ"
-  timeline: "タイムライン"
-  pinned-notes: "ピン留めしはった投稿"
-docs:
-  edit-this-page-on-github: "間違いや改善点を見つけましたか？"
-  edit-this-page-on-github-link: "このページをGitHubで編集"
-dev/views/index.vue:
-  manage-apps: "アプリの管理"
-dev/views/apps.vue:
-  manage-apps: "アプリを管理"
-  create-app: "アプリ作る"
-  app-missing: "アプリあらへん"
-dev/views/new-app.vue:
-  create-app: "アプリケーション作る"
-  app-name: "アプリケーションの名前"
-  app-name-desc: "あんたのアプリの名前。"
-  app-overview: "このアプリどんなん？"
-  callback-url: "コールバックURL (無くてもええで)"
-  callback-url-desc: "ユーザーが認証フォームで認証した後どこに連れてくかを設定できるで"
-  authority: "権限"
-  authority-desc: "ここにチェックした機能しかAPIからアクセスできひんから気ぃつけてな"
-  authority-warning: "アプリ作った後でも変えれるけど、新しいやつ追加したらそん時関連付いてるユーザーキーは全部ほかされるで。"
-pages:
-  pin-this-page: "ピン留め"
-  unpin-this-page: "ピン留めやめる"
-  like: "ええやん"
-  blocks:
-    image: "画像"
-    post: "投稿フォーム"
+_cw:
+  show: "もっとあるやろ！"
+_poll:
+  noMore: "これ以上追加でけへん"
+  deadlineTime: "時間"
+_visibility:
+  publicDescription: "みなのユーザーに公開"
+_profile:
+  username: "ユーザー名"
+_exportOrImport:
+  allNotes: "全てのノート"
+  muteList: "ミュート"
+  blockingList: "ブロック"
+  userLists: "リスト"
+_pages:
   script:
     categories:
-      random: "いんじゃんほい"
       list: "リスト"
     blocks:
       _join:
         arg1: "リスト"
-      random: "いんじゃんほい"
       _randomPick:
         arg1: "リスト"
       _dailyRandomPick:
@@ -1285,9 +1221,3 @@ pages:
         arg1: "リスト"
     types:
       array: "リスト"
-room:
-  translate: "移動"
-  save: "保存"
-  furnitures:
-    moon: "月"
-    bin: "ゴミ箱"

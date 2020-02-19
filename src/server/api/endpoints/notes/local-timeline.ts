@@ -9,6 +9,9 @@ import { makePaginationQuery } from '../../common/make-pagination-query';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query';
 import { activeUsersChart } from '../../../../services/chart';
 import { Brackets } from 'typeorm';
+import { generateRepliesQuery } from '../../common/generate-replies-query';
+import { injectPromo } from '../../common/inject-promo';
+import { injectFeatured } from '../../common/inject-featured';
 
 export const meta = {
 	desc: {
@@ -95,7 +98,8 @@ export default define(meta, async (ps, user) => {
 		.andWhere('(note.visibility = \'public\') AND (note.userHost IS NULL)')
 		.leftJoinAndSelect('note.user', 'user');
 
-	if (user) generateVisibilityQuery(query, user);
+	generateRepliesQuery(query, user);
+	generateVisibilityQuery(query, user);
 	if (user) generateMuteQuery(query, user);
 
 	if (ps.withFiles) {
@@ -112,17 +116,16 @@ export default define(meta, async (ps, user) => {
 		}));
 
 		if (ps.excludeNsfw) {
-			// v11 TODO
-			/*
-			query['_files.isSensitive'] = {
-				$ne: true
-			};
-			*/
+			query.andWhere('note.cw IS NULL');
+			query.andWhere('0 = (SELECT COUNT(*) FROM drive_file df WHERE df.id = ANY(note."fileIds") AND df."isSensitive" = TRUE)');
 		}
 	}
 	//#endregion
 
 	const timeline = await query.take(ps.limit!).getMany();
+
+	await injectPromo(timeline, user);
+	await injectFeatured(timeline, user);
 
 	process.nextTick(() => {
 		if (user) {

@@ -1,16 +1,11 @@
 import $ from 'cafy';
-import * as os from 'os';
 import config from '../../../config';
 import define from '../define';
 import { fetchMeta } from '../../../misc/fetch-meta';
-import * as pkg from '../../../../package.json';
-import { Emojis } from '../../../models';
-import { getConnection } from 'typeorm';
-import redis from '../../../db/redis';
+import { Emojis, Users } from '../../../models';
+import { DB_MAX_NOTE_TEXT_LENGTH } from '../../../misc/hard-limits';
 
 export const meta = {
-	stability: 'stable',
-
 	desc: {
 		'ja-JP': 'インスタンス情報を取得します。',
 		'en-US': 'Get the information of this instance.'
@@ -18,7 +13,7 @@ export const meta = {
 
 	tags: ['meta'],
 
-	requireCredential: false,
+	requireCredential: false as const,
 
 	params: {
 		detail: {
@@ -35,7 +30,7 @@ export const meta = {
 				type: 'string' as const,
 				optional: false as const, nullable: false as const,
 				description: 'The version of Misskey of this instance.',
-				example: pkg.version
+				example: config.version
 			},
 			name: {
 				type: 'string' as const,
@@ -83,11 +78,6 @@ export const meta = {
 				optional: false as const, nullable: false as const,
 				description: 'Whether disabled GTL.',
 			},
-			enableEmojiReaction: {
-				type: 'boolean' as const,
-				optional: false as const, nullable: false as const,
-				description: 'Whether enabled emoji reaction.',
-			},
 		}
 	}
 };
@@ -95,42 +85,43 @@ export const meta = {
 export default define(meta, async (ps, me) => {
 	const instance = await fetchMeta(true);
 
-	const emojis = await Emojis.find({ where: { host: null }, cache: { id: 'meta_emojis', milliseconds: 3600000 } }); // 1 hour
+	const emojis = await Emojis.find({
+		where: {
+			host: null
+		},
+		order: {
+			category: 'ASC',
+			name: 'ASC'
+		},
+		cache: {
+			id: 'meta_emojis',
+			milliseconds: 3600000	// 1 hour
+		}
+	});
 
 	const response: any = {
 		maintainerName: instance.maintainerName,
 		maintainerEmail: instance.maintainerEmail,
 
-		version: pkg.version,
+		version: config.version,
 
 		name: instance.name,
 		uri: config.url,
 		description: instance.description,
 		langs: instance.langs,
-		ToSUrl: instance.ToSUrl,
+		tosUrl: instance.ToSUrl,
 		repositoryUrl: instance.repositoryUrl,
 		feedbackUrl: instance.feedbackUrl,
 
 		secure: config.https != null,
-		machine: os.hostname(),
-		os: os.platform(),
-		node: process.version,
-		psql: await getConnection().query('SHOW server_version').then(x => x[0].server_version),
-		redis: redis.server_info.redis_version,
 
-		cpu: {
-			model: os.cpus()[0].model,
-			cores: os.cpus().length
-		},
-
-		announcements: instance.announcements || [],
 		disableRegistration: instance.disableRegistration,
 		disableLocalTimeline: instance.disableLocalTimeline,
 		disableGlobalTimeline: instance.disableGlobalTimeline,
-		enableEmojiReaction: instance.enableEmojiReaction,
 		driveCapacityPerLocalUserMb: instance.localDriveCapacityMb,
 		driveCapacityPerRemoteUserMb: instance.remoteDriveCapacityMb,
 		cacheRemoteFiles: instance.cacheRemoteFiles,
+		proxyRemoteFiles: instance.proxyRemoteFiles,
 		enableRecaptcha: instance.enableRecaptcha,
 		recaptchaSiteKey: instance.recaptchaSiteKey,
 		swPublickey: instance.swPublicKey,
@@ -138,8 +129,15 @@ export default define(meta, async (ps, me) => {
 		bannerUrl: instance.bannerUrl,
 		errorImageUrl: instance.errorImageUrl,
 		iconUrl: instance.iconUrl,
-		maxNoteTextLength: instance.maxNoteTextLength,
-		emojis: emojis,
+		maxNoteTextLength: Math.min(instance.maxNoteTextLength, DB_MAX_NOTE_TEXT_LENGTH),
+		emojis: emojis.map(e => ({
+			id: e.id,
+			aliases: e.aliases,
+			name: e.name,
+			category: e.category,
+			url: e.url,
+		})),
+		requireSetup: (await Users.count({})) === 0,
 		enableEmail: instance.enableEmail,
 
 		enableTwitterIntegration: instance.enableTwitterIntegration,
@@ -164,13 +162,13 @@ export default define(meta, async (ps, me) => {
 		};
 	}
 
-	if (me && (me.isAdmin || me.isModerator)) {
+	if (me && me.isAdmin) {
 		response.useStarForReactionFallback = instance.useStarForReactionFallback;
 		response.pinnedUsers = instance.pinnedUsers;
 		response.hiddenTags = instance.hiddenTags;
 		response.blockedHosts = instance.blockedHosts;
 		response.recaptchaSecretKey = instance.recaptchaSecretKey;
-		response.proxyAccount = instance.proxyAccount;
+		response.proxyAccountId = instance.proxyAccountId;
 		response.twitterConsumerKey = instance.twitterConsumerKey;
 		response.twitterConsumerSecret = instance.twitterConsumerSecret;
 		response.githubClientId = instance.githubClientId;

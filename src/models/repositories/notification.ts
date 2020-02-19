@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Users, Notes } from '..';
+import { Users, Notes, UserGroupInvitations } from '..';
 import { Notification } from '../entities/notification';
 import { ensure } from '../../prelude/ensure';
 import { awaitAll } from '../../prelude/await-all';
@@ -21,25 +21,28 @@ export class NotificationRepository extends Repository<Notification> {
 			userId: notification.notifierId,
 			user: Users.pack(notification.notifier || notification.notifierId),
 			...(notification.type === 'mention' ? {
-				note: Notes.pack(notification.note || notification.noteId!),
+				note: Notes.pack(notification.note || notification.noteId!, notification.notifieeId),
 			} : {}),
 			...(notification.type === 'reply' ? {
-				note: Notes.pack(notification.note || notification.noteId!),
+				note: Notes.pack(notification.note || notification.noteId!, notification.notifieeId),
 			} : {}),
 			...(notification.type === 'renote' ? {
-				note: Notes.pack(notification.note || notification.noteId!),
+				note: Notes.pack(notification.note || notification.noteId!, notification.notifieeId),
 			} : {}),
 			...(notification.type === 'quote' ? {
-				note: Notes.pack(notification.note || notification.noteId!),
+				note: Notes.pack(notification.note || notification.noteId!, notification.notifieeId),
 			} : {}),
 			...(notification.type === 'reaction' ? {
-				note: Notes.pack(notification.note || notification.noteId!),
+				note: Notes.pack(notification.note || notification.noteId!, notification.notifieeId),
 				reaction: notification.reaction
 			} : {}),
 			...(notification.type === 'pollVote' ? {
-				note: Notes.pack(notification.note || notification.noteId!),
+				note: Notes.pack(notification.note || notification.noteId!, notification.notifieeId),
 				choice: notification.choice
-			} : {})
+			} : {}),
+			...(notification.type === 'groupInvited' ? {
+				invitation: UserGroupInvitations.pack(notification.userGroupInvitationId!),
+			} : {}),
 		});
 	}
 
@@ -70,7 +73,7 @@ export const packedNotificationSchema = {
 		type: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
-			enum: ['follow', 'receiveFollowRequest', 'mention', 'reply', 'renote', 'quote', 'reaction', 'pollVote'],
+			enum: ['follow', 'followRequestAccepted', 'receiveFollowRequest', 'mention', 'reply', 'renote', 'quote', 'reaction', 'pollVote'],
 			description: 'The type of the notification.'
 		},
 		userId: {

@@ -5,15 +5,19 @@ import { genId } from '../misc/gen-id';
 import { User } from '../models/entities/user';
 import { Note } from '../models/entities/note';
 import { Notification } from '../models/entities/notification';
+import { FollowRequest } from '../models/entities/follow-request';
+import { UserGroupInvitation } from '../models/entities/user-group-invitation';
 
 export async function createNotification(
 	notifieeId: User['id'],
 	notifierId: User['id'],
-	type: string,
+	type: Notification['type'],
 	content?: {
 		noteId?: Note['id'];
 		reaction?: string;
 		choice?: number;
+		followRequestId?: FollowRequest['id'];
+		userGroupInvitationId?: UserGroupInvitation['id'];
 	}
 ) {
 	if (notifieeId === notifierId) {
@@ -33,6 +37,8 @@ export async function createNotification(
 		if (content.noteId) data.noteId = content.noteId;
 		if (content.reaction) data.reaction = content.reaction;
 		if (content.choice) data.choice = content.choice;
+		if (content.followRequestId) data.followRequestId = content.followRequestId;
+		if (content.userGroupInvitationId) data.userGroupInvitationId = content.userGroupInvitationId;
 	}
 
 	// Create notification
