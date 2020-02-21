@@ -40,7 +40,8 @@ export default Vue.extend({
 	},
 	data() {
 		return {
-			gridInnerStyle: {}
+			gridInnerStyle: {},
+			sizeWaiting: false
 		}
 	},
 	mounted() {
@@ -50,26 +51,37 @@ export default Vue.extend({
 	beforeDestroy() {
 		window.removeEventListener('resize', this.size);
 	},
+	activated() {
+		this.size();
+	},
 	methods: {
 		previewable(file) {
 			return file.type.startsWith('video') || file.type.startsWith('image');
 		},
 		size() {
 			// for Safari bug
-			if (this.$refs.gridOuter) {
-				let height = 287;
-				const parent = this.$props.parentElement || this.$parent.$el;
+			if (this.sizeWaiting) return;
 
-				if (this.$refs.gridOuter.clientHeight) {
-					height = this.$refs.gridOuter.clientHeight;
-				} else if (parent) {
-					height = parent.getBoundingClientRect().width * 9 / 16;
+			this.sizeWaiting = true;
+
+			window.requestAnimationFrame(() => {
+				this.sizeWaiting = false;
+
+				if (this.$refs.gridOuter) {
+					let height = 287;
+					const parent = this.$props.parentElement || this.$parent.$el;
+
+					if (this.$refs.gridOuter.clientHeight) {
+						height = this.$refs.gridOuter.clientHeight;
+					} else if (parent) {
+						height = parent.getBoundingClientRect().width * 9 / 16;
+					}
+
+					this.gridInnerStyle = { height: `${height}px` };
+				} else {
+					this.gridInnerStyle = {};
 				}
-
-				this.gridInnerStyle = { height: `${height}px` };
-			} else {
-				this.gridInnerStyle = {};
-			}
+			});
 		}
 	}
 });

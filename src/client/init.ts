@@ -136,6 +136,14 @@ document.body.innerHTML = '<div id="app"></div>';
 const os = new MiOS();
 
 os.init(async () => {
+	window.addEventListener('storage', e => {
+		if (e.key === 'vuex') {
+			os.store.replaceState(JSON.parse(localStorage['vuex']));
+		} else if (e.key === 'i') {
+			location.reload();
+		}
+	}, false)
+
 	if ('Notification' in window && os.store.getters.isSignedIn) {
 		// 許可を得ていなかったらリクエスト
 		if (Notification.permission === 'default') {
@@ -190,6 +198,7 @@ os.init(async () => {
 				(vm as any).focus();
 			},
 			sound(type: string) {
+				if (this.$store.state.device.sfxVolume === 0) return;
 				const sound = this.$store.state.device['sfx' + type.substr(0, 1).toUpperCase() + type.substr(1)];
 				if (sound == null) return;
 				const audio = new Audio(`/assets/sounds/${sound}.mp3`);
