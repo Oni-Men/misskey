@@ -185,10 +185,10 @@ os.init(async () => {
 				};
 				return p;
 			},
-			menu(opts) {
+			menu(opts, event: string) {
 				const vm = this.new(Menu, opts);
 				const p: any = new Promise((res) => {
-					vm.$once('closed', () => res());
+					vm.$once(event || 'closed', () => res());
 				});
 				return p;
 			},
