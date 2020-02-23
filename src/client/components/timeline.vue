@@ -1,5 +1,5 @@
 <template>
-<x-notes ref="tl" :pagination="pagination" @before="$emit('before')" @after="e => $emit('after', e)" @queue="$emit('queue', $event)"/>
+<x-notes ref="tl" :pagination="pagination" :extract="prioritizePromo" @before="$emit('before')" @after="e => $emit('after', e)" @queue="$emit('queue', $event)"/>
 </template>
 
 <script lang="ts">
@@ -128,6 +128,16 @@ export default Vue.extend({
 	methods: {
 		focus() {
 			this.$refs.tl.focus();
+		},
+
+		prioritizePromo(notes) {
+			const promos = notes.filter(note => note._prId_).map(note => note.id);
+			return notes.filter(note => {
+				if (note._featuredId_ && promos.includes(note.id)) {
+					return false;
+				}				
+				return true;
+			});
 		}
 	}
 });
