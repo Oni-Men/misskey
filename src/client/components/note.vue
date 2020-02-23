@@ -380,7 +380,6 @@ export default Vue.extend({
 						(this as any).$root.api('notes/create', {
 							renoteId: this.appearNote.id
 						});
-						this.focus();
 					}
 				}, {
 					text: this.$t('quote'),
@@ -388,12 +387,12 @@ export default Vue.extend({
 					action: () => {
 						this.$root.post({
 							renote: this.appearNote,
-						}, this.focus);
+						});
 					}
 				}]
 				source: this.$refs.renoteButton,
-				viaKeyboard,
-			}, 'cancelled').then(this.focus);
+				viaKeyboard
+			});
 		},
 
 		renoteDirectly() {
