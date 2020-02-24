@@ -205,6 +205,12 @@ export const meta = {
 			message: 'Poll is already expired.',
 			code: 'CANNOT_CREATE_ALREADY_EXPIRED_POLL',
 			id: '04da457d-b083-4055-9082-955525eda5a5'
+		},
+
+		youHaveAlreadyRenotedThisNote: {
+			message: 'You have already renoted this note',
+			code: 'YOU_HAVE_ALREADY_RENOTED_THIS_NOTE',
+			id: '2ee1f783-f422-40fc-9687-d9d3414b4344'
 		}
 	}
 };
@@ -229,6 +235,20 @@ export default define(meta, async (ps, user, app) => {
 
 	let renote: Note | undefined;
 	if (ps.renoteId != null) {
+
+		const listAlreadyRenoted = await Notes.createQueryBuilder('note')
+		.where('note.userId = :userId', {userId: user.id})
+		.andWhere('note.renoteId = :renoteId', {renoteId: ps.renoteId})
+		.andWhere(`note.text IS NULL`)
+		.andWhere(`note.fileIds = '{}'`)
+		.getMany();
+
+		if (listAlreadyRenoted.length > 0) {
+			if (ps.text === null && files.length === 0) {
+				throw new ApiError(meta.errors.youHaveAlreadyRenotedThisNote);
+			}
+		}
+
 		// Fetch renote to note
 		renote = await Notes.findOne(ps.renoteId);
 
