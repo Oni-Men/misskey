@@ -1051,16 +1051,16 @@ export default Vue.extend({
 				}
 
 				> .add {
-					margin: 0 auto;
+					margin: 0;
 				}
 
 				.customize-container {
 					margin: 8px 0;
-					background: #fff;
 
 					> header {
 						position: relative;
 						line-height: 32px;
+						background: var(--panel);
 
 						> .handle {
 							padding: 0 8px;
@@ -1078,6 +1078,7 @@ export default Vue.extend({
 
 					> div {
 						padding: 8px;
+						background: var(--panel);
 
 						> * {
 							pointer-events: none;
