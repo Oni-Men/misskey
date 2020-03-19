@@ -46,7 +46,7 @@
 						<a class="rp" v-if="appearNote.renote != null">RN:</a>
 					</div>
 					<div class="files" v-if="appearNote.files.length > 0">
-						<x-media-list :media-list="appearNote.files"/>
+						<x-media-list ref="mediaList" :media-list="appearNote.files"/>
 					</div>
 					<x-poll v-if="appearNote.poll" :note="appearNote" ref="pollViewer"/>
 					<x-url-preview v-for="url in urls" :url="url" :key="url" :compact="true" class="url-preview"/>
@@ -144,6 +144,14 @@ export default Vue.extend({
 			hideThisNote: false,
 			faBolt, faTimes, faBullhorn, faPlus, faMinus, faRetweet, faReply, faReplyAll, faEllipsisH, faHome, faUnlock, faEnvelope, faThumbtack, faBan
 		};
+	},
+
+	watch: {
+		showContent(x) {
+			if (this.appearNote.files.length > 0 && x) {
+				(this.$refs.mediaList as any).size();
+			}
+		}
 	},
 
 	computed: {
