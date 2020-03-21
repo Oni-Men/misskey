@@ -39,79 +39,6 @@ import XPopup from './popup.vue';
 import { focusPrev, focusNext } from '../scripts/focus';
 
 export default Vue.extend({
-<<<<<<< HEAD
-  components: {
-    XPopup
-  },
-  props: {
-    source: {
-      required: true
-    },
-    items: {
-      type: Array,
-      required: true
-    },
-    align: {
-      type: String,
-      required: false
-    },
-    noCenter: {
-      type: Boolean,
-      required: false
-    },
-    fixed: {
-      type: Boolean,
-      required: false
-    },
-    width: {
-      type: Number,
-      required: false
-    },
-    direction: {
-      type: String,
-      required: false
-    },
-    viaKeyboard: {
-      type: Boolean,
-      required: false
-    },
-  },
-  data() {
-    return {
-      faCircle
-    };
-  },
-  computed: {
-    keymap(): any {
-      return {
-        'up|k|shift+tab': this.focusUp,
-        'down|j|tab': this.focusDown,
-      };
-    },
-  },
-  mounted() {
-    if (this.viaKeyboard) {
-      this.$nextTick(() => {
-        focusNext(this.$refs.items.$slots.default[0].elm, true);
-      });
-    }
-  },
-  methods: {
-    clicked(fn) {
-      fn();
-      this.close();
-    },
-    close() {
-      this.$refs.popup.close();
-    },
-    focusUp() {
-      focusPrev(document.activeElement);
-    },
-    focusDown() {
-      focusNext(document.activeElement);
-    }
-  }
-=======
 	components: {
 		XPopup
 	},
@@ -183,7 +110,6 @@ export default Vue.extend({
 			focusNext(document.activeElement);
 		}
 	}
->>>>>>> upstream/develop
 });
 </script>
 

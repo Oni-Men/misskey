@@ -33,21 +33,6 @@ export default Vue.extend({
 			default: false
 		},
 		min: {
-<<<<<<< HEAD
-			type: String,
-			required: false,
-			default: "0"
-		},
-		max: {
-			type: String,
-			required: false,
-			default: "100",
-		},
-		step: {
-			type: String,
-			required: false,
-			default: "1"
-=======
 			type: Number,
 			required: false,
 			default: 0
@@ -61,7 +46,6 @@ export default Vue.extend({
 			type: Number,
 			required: false,
 			default: 1
->>>>>>> upstream/develop
 		},
 		autofocus: {
 			type: Boolean,
@@ -71,13 +55,8 @@ export default Vue.extend({
 	data() {
 		return {
 			v: this.value,
-<<<<<<< HEAD
-			focused: false,
-		}
-=======
 			focused: false
 		};
->>>>>>> upstream/develop
 	},
 	watch: {
 		value(v) {
@@ -93,72 +72,6 @@ export default Vue.extend({
 	}
 });
 </script>
-<<<<<<< HEAD
-<style lang="scss" scoped>
-	.range-root {
-		position: relative;
-		margin: 8px;
-
-		> .icon {
-			display: inline-block;
-			width: 24px;
-			text-align: center;
-		}
-
-		> .title {
-			pointer-events: none;
-			font-size: 16px;
-			color: var(--inputLabel);
-			overflow: hidden;
-		}
-
-		input {
-			-webkit-appearance: none;
-			appearance: none;
-			background: var(--xxubwiul);
-			height: 7px;
-			margin: 0 8px;
-			border-radius: 7px;
-
-			&.disabled {
-				opacity: 0.6;
-				cursor: not-allowed;
-			}
-
-			&:focus,
-			&:active {
-				outline: none;
-			}
-
-			&::-webkit-slider-thumb {
-				-webkit-appearance: none;
-				appearance: none;
-				cursor: pointer;
-				width: 20px;
-				height: 20px;
-				display: block;
-				border-radius: 50%;
-				border: none;
-				background: var(--accent);
-				box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
-				box-sizing: content-box;
-			}
-
-			&::-moz-range-thumb {
-				-moz-appearance: none;
-				appearance: none;
-				cursor: pointer;
-				width: 20px;
-				height: 20px;
-				display: block;
-				border-radius: 50%;
-				border: none;
-				background: var(--accent);
-				box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
-			}
-		}
-	}
-=======
 
 <style lang="scss" scoped>
 .timctyfi {
@@ -222,5 +135,4 @@ export default Vue.extend({
 		}
 	}
 }
->>>>>>> upstream/develop
 </style>

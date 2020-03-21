@@ -100,6 +100,7 @@ export default Vue.extend({
 .sqadhkmv {
 	> .separator {
 		text-align: center;
+		background: var(--bg);
 
 		> .date {
 			display: inline-block;
