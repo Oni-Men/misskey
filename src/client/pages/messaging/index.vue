@@ -1,5 +1,5 @@
 <template>
-<div class="mk-messaging">
+<div class="mk-messaging" v-size="{ max: [400] }">
 	<portal to="icon"><fa :icon="faComments"/></portal>
 	<portal to="title">{{ $t('messaging') }}</portal>
 
@@ -31,7 +31,7 @@
 			</div>
 		</router-link>
 	</div>
-	<div class="no-history" v-if="!fetching && messages.length == 0">
+	<div class="_fullinfo" v-if="!fetching && messages.length == 0">
 		<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
 		<div>{{ $t('noHistory') }}</div>
 	</div>
@@ -42,14 +42,11 @@
 <script lang="ts">
 import Vue from 'vue';
 import { faUser, faUsers, faComments, faPlus } from '@fortawesome/free-solid-svg-icons';
-import i18n from '../../i18n';
 import getAcct from '../../../misc/acct/render';
 import MkButton from '../../components/ui/button.vue';
 import MkUserSelect from '../../components/user-select.vue';
 
 export default Vue.extend({
-	i18n,
-
 	components: {
 		MkButton
 	},
@@ -171,18 +168,14 @@ export default Vue.extend({
 .mk-messaging {
 
 	> .start {
-		margin: 0 auto 16px auto;
+		margin: 0 auto var(--margin) auto;
 	}
 
 	> .history {
 		> .message {
 			display: block;
 			text-decoration: none;
-			margin-bottom: 16px;
-
-			@media (max-width: 500px) {
-				margin-bottom: 8px;
-			}
+			margin-bottom: var(--margin);
 
 			* {
 				pointer-events: none;
@@ -287,19 +280,7 @@ export default Vue.extend({
 		}
 	}
 
-	> .no-history {
-		padding: 32px;
-		text-align: center;
-
-		> img {
-			vertical-align: bottom;
-			height: 128px;
-			margin-bottom: 16px;
-			border-radius: 16px;
-		}
-	}
-
-	@media (max-width: 400px) {
+	&.max-width_400px {
 		> .history {
 			> .message {
 				&:not([data-is-me]):not([data-is-read]) {

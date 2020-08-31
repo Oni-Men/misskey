@@ -1,9 +1,11 @@
 <template>
-<div class="mk-user-page" v-if="user">
+<div class="mk-user-page" v-if="user" v-size="{ max: [500] }">
 	<portal to="title" v-if="user"><mk-user-name :user="user" :nowrap="false" class="name"/></portal>
 	<portal to="avatar" v-if="user"><mk-avatar class="avatar" :user="user" :disable-preview="true"/></portal>
-	
+
 	<mk-remote-caution v-if="user.host != null" :href="user.url" style="margin-bottom: var(--margin)"/>
+	<div class="punished _panel" v-if="user.isSuspended"><fa :icon="faExclamationTriangle" style="margin-right: 8px;"/> {{ $t('userSuspended') }}</div>
+	<div class="punished _panel" v-if="user.isSilenced"><fa :icon="faExclamationTriangle" style="margin-right: 8px;"/> {{ $t('userSilenced') }}</div>
 	<div class="profile _panel" :key="user.id">
 		<div class="banner-container" :style="style">
 			<div class="banner" ref="banner" :style="style"></div>
@@ -81,7 +83,7 @@
 	<router-view :user="user"></router-view>
 	<template v-if="$route.name == 'user'">
 		<div class="pins">
-			<x-note v-for="note in user.pinnedNotes" class="note" :note="note" :key="note.id" :detail="true" :pinned="true"/>
+			<x-note v-for="note in user.pinnedNotes" class="note" :note="note" @updated="pinnedNoteUpdated(note, $event)" :key="note.id" :detail="true" :pinned="true"/>
 		</div>
 		<mk-container :body-togglable="true" class="content">
 			<template #header><fa :icon="faImage"/>{{ $t('images') }}</template>
@@ -105,7 +107,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { faEllipsisH, faRobot, faLock, faBookmark, faChartBar, faImage, faBirthdayCake, faMapMarker } from '@fortawesome/free-solid-svg-icons';
+import { faExclamationTriangle, faEllipsisH, faRobot, faLock, faBookmark, faChartBar, faImage, faBirthdayCake, faMapMarker } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarAlt, faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 import * as age from 's-age';
 import XUserTimeline from './index.timeline.vue';
@@ -116,6 +118,7 @@ import MkContainer from '../../components/ui/container.vue';
 import MkRemoteCaution from '../../components/remote-caution.vue';
 import Progress from '../../scripts/loading';
 import parseAcct from '../../../misc/acct/parse';
+import { getScrollPosition } from '../../scripts/scroll';
 
 export default Vue.extend({
 	components: {
@@ -139,7 +142,7 @@ export default Vue.extend({
 			user: null,
 			error: null,
 			parallaxAnimationId: null,
-			faEllipsisH, faRobot, faLock, faBookmark, farBookmark, faChartBar, faImage, faBirthdayCake, faMapMarker, faCalendarAlt
+			faExclamationTriangle, faEllipsisH, faRobot, faLock, faBookmark, farBookmark, faChartBar, faImage, faBirthdayCake, faMapMarker, faCalendarAlt
 		};
 	},
 
@@ -166,12 +169,8 @@ export default Vue.extend({
 
 	mounted() {
 		window.requestAnimationFrame(this.parallaxLoop);
-		window.addEventListener('scroll', this.parallax, { passive: true });
-		document.addEventListener('touchmove', this.parallax, { passive: true });
 		this.$once('hook:beforeDestroy', () => {
 			window.cancelAnimationFrame(this.parallaxAnimationId);
-			window.removeEventListener('scroll', this.parallax);
-			document.removeEventListener('touchmove', this.parallax);
 		});
 	},
 
@@ -203,7 +202,7 @@ export default Vue.extend({
 			const banner = this.$refs.banner as any;
 			if (banner == null) return;
 
-			const top = window.scrollY;
+			const top = getScrollPosition(this.$el);
 
 			if (top < 0) return;
 
@@ -211,12 +210,22 @@ export default Vue.extend({
 			const pos = -(top / z);
 			banner.style.backgroundPosition = `center calc(50% - ${pos}px)`;
 		},
+
+		pinnedNoteUpdated(oldValue, newValue) {
+			const i = this.user.pinnedNotes.findIndex(n => n === oldValue);
+			Vue.set(this.user.pinnedNotes, i, newValue);
+		},
 	}
 });
 </script>
 
 <style lang="scss" scoped>
 .mk-user-page {
+	> .punished {
+		font-size: 0.8em;
+		padding: 16px;
+	}
+
 	> .profile {
 		position: relative;
 		margin-bottom: var(--margin);
@@ -228,10 +237,6 @@ export default Vue.extend({
 			overflow: hidden;
 			background-size: cover;
 			background-position: center;
-
-			@media (max-width: 500px) {
-				height: 140px;
-			}
 
 			> .banner {
 				height: 100%;
@@ -249,10 +254,6 @@ export default Vue.extend({
 				width: 100%;
 				height: 78px;
 				background: linear-gradient(transparent, rgba(#000, 0.7));
-
-				@media (max-width: 500px) {
-					display: none;
-				}
 			}
 
 			> .followed {
@@ -300,10 +301,6 @@ export default Vue.extend({
 				box-sizing: border-box;
 				color: #fff;
 
-				@media (max-width: 500px) {
-					display: none;
-				}
-
 				> .name {
 					display: block;
 					margin: 0;
@@ -335,10 +332,6 @@ export default Vue.extend({
 			font-weight: bold;
 			border-bottom: solid 1px var(--divider);
 
-			@media (max-width: 500px) {
-				display: block;
-			}
-
 			> .bottom {
 				> * {
 					display: inline-block;
@@ -357,25 +350,11 @@ export default Vue.extend({
 			width: 120px;
 			height: 120px;
 			box-shadow: 1px 1px 3px rgba(#000, 0.2);
-
-			@media (max-width: 500px) {
-				top: 90px;
-				left: 0;
-				right: 0;
-				width: 92px;
-				height: 92px;
-				margin: auto;
-			}
 		}
 
 		> .description {
 			padding: 24px 24px 24px 154px;
 			font-size: 0.95em;
-
-			@media (max-width: 500px) {
-				padding: 16px;
-				text-align: center;
-			}
 
 			> .empty {
 				margin: 0;
@@ -388,10 +367,6 @@ export default Vue.extend({
 			font-size: 0.9em;
 			border-top: solid 1px var(--divider);
 
-			@media (max-width: 500px) {
-				padding: 16px;
-			}
-		
 			> .field {
 				display: flex;
 				padding: 0;
@@ -428,10 +403,6 @@ export default Vue.extend({
 			padding: 24px;
 			border-top: solid 1px var(--divider);
 
-			@media (max-width: 500px) {
-				padding: 16px;
-			}
-
 			> a {
 				flex: 1;
 				text-align: center;
@@ -464,6 +435,48 @@ export default Vue.extend({
 
 	> .content {
 		margin-bottom: var(--margin);
+	}
+
+	&.max-width_500px {
+		> .profile {
+			> .banner-container {
+				height: 140px;
+
+				> .fade {
+					display: none;
+				}
+
+				> .title {
+					display: none;
+				}
+			}
+
+			> .title {
+				display: block;
+			}
+
+			> .avatar {
+				top: 90px;
+				left: 0;
+				right: 0;
+				width: 92px;
+				height: 92px;
+				margin: auto;
+			}
+
+			> .description {
+				padding: 16px;
+				text-align: center;
+			}
+
+			> .fields {
+				padding: 16px;
+			}
+
+			> .status {
+				padding: 16px;
+			}
+		}
 	}
 }
 </style>

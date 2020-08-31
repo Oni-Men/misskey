@@ -7,10 +7,12 @@ import { fetchMeta } from '../../../../misc/fetch-meta';
 import { ApiError } from '../../error';
 import { ID } from '../../../../misc/cafy-id';
 import { User } from '../../../../models/entities/user';
-import { Users, DriveFiles, Notes } from '../../../../models';
+import { Users, DriveFiles, Notes, Channels } from '../../../../models';
 import { DriveFile } from '../../../../models/entities/drive-file';
 import { Note } from '../../../../models/entities/note';
 import { DB_MAX_NOTE_TEXT_LENGTH } from '../../../../misc/hard-limits';
+import { noteVisibilities } from '../../../../types';
+import { Channel } from '../../../../models/entities/channel';
 
 let maxNoteTextLength = 500;
 
@@ -38,7 +40,7 @@ export const meta = {
 
 	params: {
 		visibility: {
-			validator: $.optional.str.or(['public', 'home', 'followers', 'specified']),
+			validator: $.optional.str.or(noteVisibilities as unknown as string[]),
 			default: 'public',
 			desc: {
 				'ja-JP': '投稿の公開範囲'
@@ -127,16 +129,23 @@ export const meta = {
 		},
 
 		replyId: {
-			validator: $.optional.type(ID),
+			validator: $.optional.nullable.type(ID),
 			desc: {
 				'ja-JP': '返信対象'
 			}
 		},
 
 		renoteId: {
-			validator: $.optional.type(ID),
+			validator: $.optional.nullable.type(ID),
 			desc: {
 				'ja-JP': 'Renote対象'
+			}
+		},
+
+		channelId: {
+			validator: $.optional.nullable.type(ID),
+			desc: {
+				'ja-JP': 'チャンネル'
 			}
 		},
 
@@ -207,15 +216,15 @@ export const meta = {
 			id: '04da457d-b083-4055-9082-955525eda5a5'
 		},
 
-		youHaveAlreadyRenotedThisNote: {
-			message: 'You have already renoted this note',
-			code: 'YOU_HAVE_ALREADY_RENOTED_THIS_NOTE',
-			id: '2ee1f783-f422-40fc-9687-d9d3414b4344'
-		}
+		noSuchChannel: {
+			message: 'No such channel.',
+			code: 'NO_SUCH_CHANNEL',
+			id: 'b1653923-5453-4edc-b786-7c4f39bb0bbb'
+		},
 	}
 };
 
-export default define(meta, async (ps, user, app) => {
+export default define(meta, async (ps, user) => {
 	let visibleUsers: User[] = [];
 	if (ps.visibleUserIds) {
 		visibleUsers = (await Promise.all(ps.visibleUserIds.map(id => Users.findOne(id))))
@@ -235,20 +244,6 @@ export default define(meta, async (ps, user, app) => {
 
 	let renote: Note | undefined;
 	if (ps.renoteId != null) {
-
-		const listAlreadyRenoted = await Notes.createQueryBuilder('note')
-		.where('note.userId = :userId', {userId: user.id})
-		.andWhere('note.renoteId = :renoteId', {renoteId: ps.renoteId})
-		.andWhere(`note.text IS NULL`)
-		.andWhere(`note.fileIds = '{}'`)
-		.getMany();
-
-		if (listAlreadyRenoted.length > 0) {
-			if (ps.text === null && files.length === 0) {
-				throw new ApiError(meta.errors.youHaveAlreadyRenotedThisNote);
-			}
-		}
-
 		// Fetch renote to note
 		renote = await Notes.findOne(ps.renoteId);
 
@@ -288,6 +283,15 @@ export default define(meta, async (ps, user, app) => {
 		throw new ApiError(meta.errors.contentRequired);
 	}
 
+	let channel: Channel | undefined;
+	if (ps.channelId != null) {
+		channel = await Channels.findOne(ps.channelId);
+
+		if (channel == null) {
+			throw new ApiError(meta.errors.noSuchChannel);
+		}
+	}
+
 	// 投稿を作成
 	const note = await create(user, {
 		createdAt: new Date(),
@@ -301,11 +305,11 @@ export default define(meta, async (ps, user, app) => {
 		reply,
 		renote,
 		cw: ps.cw,
-		app,
 		viaMobile: ps.viaMobile,
 		localOnly: ps.localOnly,
 		visibility: ps.visibility,
 		visibleUsers,
+		channel,
 		apMentions: ps.noExtractMentions ? [] : undefined,
 		apHashtags: ps.noExtractHashtags ? [] : undefined,
 		apEmojis: ps.noExtractEmojis ? [] : undefined,
