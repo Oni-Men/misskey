@@ -4,7 +4,6 @@ import renderNote from '../../../remote/activitypub/renderer/note';
 import { Users, Notes } from '../../../models';
 import { Note } from '../../../models/entities/note';
 import { deliverToFollowers } from '../../../remote/activitypub/deliver-manager';
-import { deliverToRelays } from '../../relay';
 
 export async function deliverQuestionUpdate(noteId: Note['id']) {
 	const note = await Notes.findOne(noteId);
@@ -17,6 +16,5 @@ export async function deliverQuestionUpdate(noteId: Note['id']) {
 
 		const content = renderActivity(renderUpdate(await renderNote(note, false), user));
 		deliverToFollowers(user, content);
-		deliverToRelays(user, content);
 	}
 }

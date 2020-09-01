@@ -28,8 +28,8 @@ export const meta = {
 	}
 };
 
-export default define(meta, async (ps, user, token) => {
-	const isSecure = token == null;
+export default define(meta, async (ps, user, app) => {
+	const isSecure = user != null && app == null;
 
 	// Lookup app
 	const ap = await Apps.findOne(ps.appId);

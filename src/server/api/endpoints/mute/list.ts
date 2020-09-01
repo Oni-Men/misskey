@@ -10,7 +10,7 @@ export const meta = {
 		'en-US': 'Get muted users.'
 	},
 
-	tags: ['account'],
+	tags: ['mute', 'account'],
 
 	requireCredential: true as const,
 

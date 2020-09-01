@@ -13,7 +13,7 @@ export const meta = {
 		'en-US': 'Mute a user'
 	},
 
-	tags: ['account'],
+	tags: ['mute', 'users'],
 
 	requireCredential: true as const,
 

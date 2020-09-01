@@ -10,7 +10,7 @@ export const meta = {
 		'en-US': 'Get blocking users.'
 	},
 
-	tags: ['account'],
+	tags: ['blocking', 'account'],
 
 	requireCredential: true as const,
 

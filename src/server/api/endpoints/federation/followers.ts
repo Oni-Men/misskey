@@ -5,7 +5,7 @@ import { Followings } from '../../../../models';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 
 export const meta = {
-	tags: ['federation'],
+	tags: ['users'],
 
 	requireCredential: false as const,
 

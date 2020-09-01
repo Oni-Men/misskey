@@ -7,10 +7,13 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import i18n from '../i18n';
 import { length } from 'stringz';
 import { concat } from '../../prelude/array';
 
 export default Vue.extend({
+	i18n,
+
 	props: {
 		value: {
 			type: Boolean,
@@ -27,7 +30,7 @@ export default Vue.extend({
 			return concat([
 				this.note.text ? [this.$t('_cw.chars', { count: length(this.note.text) })] : [],
 				this.note.files && this.note.files.length !== 0 ? [this.$t('_cw.files', { count: this.note.files.length }) ] : [],
-				this.note.poll != null ? [this.$t('poll')] : []
+				this.note.poll != null ? [this.$t('_cw.poll')] : []
 			] as string[][]).join(' / ');
 		}
 	},

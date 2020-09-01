@@ -22,12 +22,12 @@
 
 				<mk-switch v-model="usePasswordLessLogin" @change="updatePasswordLessLogin" v-if="$store.state.i.securityKeysList.length > 0">{{ $t('passwordLessLogin') }}</mk-switch>
 
-				<mk-info warn v-if="registration && registration.error">{{ $t('error') }} {{ registration.error }}</mk-info>
+				<mk-info warn v-if="registration && registration.error">{{ $t('something-went-wrong') }} {{ registration.error }}</mk-info>
 				<mk-button v-if="!registration || registration.error" @click="addSecurityKey">{{ $t('_2fa.registerKey') }}</mk-button>
 
 				<ol v-if="registration && !registration.error">
 					<li v-if="registration.stage >= 0">
-						{{ $t('tapSecurityKey') }}
+						{{ $t('activate-key') }}
 						<fa icon="spinner" pulse fixed-width v-if="registration.saving && registration.stage == 0" />
 					</li>
 					<li v-if="registration.stage >= 1">
@@ -65,14 +65,20 @@
 <script lang="ts">
 import Vue from 'vue';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
+import i18n from '../../i18n';
 import { hostname } from '../../config';
-import { byteify, hexify, stringify } from '../../scripts/2fa';
+import { hexifyAB } from '../../scripts/2fa';
 import MkButton from '../../components/ui/button.vue';
 import MkInfo from '../../components/ui/info.vue';
 import MkInput from '../../components/ui/input.vue';
 import MkSwitch from '../../components/ui/switch.vue';
 
+function stringifyAB(buffer) {
+	return String.fromCharCode.apply(null, new Uint8Array(buffer));
+}
+
 export default Vue.extend({
+	i18n,
 	components: {
 		MkButton, MkInfo, MkInput, MkSwitch
 	},
@@ -151,8 +157,8 @@ export default Vue.extend({
 				name: this.keyName,
 				challengeId: this.registration.challengeId,
 				// we convert each 16 bits to a string to serialise
-				clientDataJSON: stringify(this.registration.credential.response.clientDataJSON),
-				attestationObject: hexify(this.registration.credential.response.attestationObject)
+				clientDataJSON: stringifyAB(this.registration.credential.response.clientDataJSON),
+				attestationObject: hexifyAB(this.registration.credential.response.attestationObject)
 			}).then(key => {
 				this.registration = null;
 				key.lastUsed = new Date();
@@ -202,17 +208,22 @@ export default Vue.extend({
 						challengeId: registration.challengeId,
 						stage: 0,
 						publicKeyOptions: {
-							challenge: byteify(registration.challenge, 'base64'),
+							challenge: Buffer.from(
+								registration.challenge
+									.replace(/\-/g, "+")
+									.replace(/_/g, "/"),
+								'base64'
+							),
 							rp: {
 								id: hostname,
 								name: 'Misskey'
 							},
 							user: {
-								id: byteify(this.$store.state.i.id, 'ascii'),
+								id: Uint8Array.from(this.$store.state.i.id, c => c.charCodeAt(0)),
 								name: this.$store.state.i.username,
 								displayName: this.$store.state.i.name,
 							},
-							pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+							pubKeyCredParams: [{alg: -7, type: 'public-key'}],
 							timeout: 60000,
 							attestation: 'direct'
 						},

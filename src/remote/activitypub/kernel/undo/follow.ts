@@ -1,20 +1,26 @@
+import config from '../../../../config';
 import unfollow from '../../../../services/following/delete';
 import cancelRequest from '../../../../services/following/requests/cancel';
 import { IFollow } from '../../type';
 import { IRemoteUser } from '../../../../models/entities/user';
-import { FollowRequests, Followings } from '../../../../models';
-import DbResolver from '../../db-resolver';
+import { Users, FollowRequests, Followings } from '../../../../models';
 
-export default async (actor: IRemoteUser, activity: IFollow): Promise<string> => {
-	const dbResolver = new DbResolver();
+export default async (actor: IRemoteUser, activity: IFollow): Promise<void> => {
+	const id = typeof activity.object == 'string' ? activity.object : activity.object.id;
+	if (id == null) throw new Error('missing id');
 
-	const followee = await dbResolver.getUserFromApId(activity.object);
+	if (!id.startsWith(config.url + '/')) {
+		return;
+	}
+
+	const followee = await Users.findOne(id.split('/').pop());
+
 	if (followee == null) {
-		return `skip: followee not found`;
+		throw new Error('followee not found');
 	}
 
 	if (followee.host != null) {
-		return `skip: フォロー解除しようとしているユーザーはローカルユーザーではありません`;
+		throw new Error('フォロー解除しようとしているユーザーはローカルユーザーではありません');
 	}
 
 	const req = await FollowRequests.findOne({
@@ -29,13 +35,9 @@ export default async (actor: IRemoteUser, activity: IFollow): Promise<string> =>
 
 	if (req) {
 		await cancelRequest(followee, actor);
-		return `ok: follow request canceled`;
 	}
 
 	if (following) {
 		await unfollow(actor, followee);
-		return `ok: unfollowed`;
 	}
-
-	return `skip: リクエストもフォローもされていない`;
 };

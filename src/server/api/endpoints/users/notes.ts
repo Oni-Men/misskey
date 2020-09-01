@@ -6,7 +6,7 @@ import { getUser } from '../../common/getters';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query';
 import { Notes } from '../../../../models';
-import { generateMutedUserQuery } from '../../common/generate-muted-user-query';
+import { generateMuteQuery } from '../../common/generate-mute-query';
 import { Brackets } from 'typeorm';
 
 export const meta = {
@@ -134,7 +134,7 @@ export default define(meta, async (ps, me) => {
 		.leftJoinAndSelect('note.user', 'user');
 
 	generateVisibilityQuery(query, me);
-	if (me) generateMutedUserQuery(query, me, user);
+	if (me) generateMuteQuery(query, me, user);
 
 	if (ps.withFiles) {
 		query.andWhere('note.fileIds != \'{}\'');

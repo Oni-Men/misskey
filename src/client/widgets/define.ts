@@ -1,15 +1,13 @@
 import Vue from 'vue';
-import { Form } from '../scripts/form';
 
-export default function <T extends Form>(data: {
+export default function <T extends object>(data: {
 	name: string;
 	props?: () => T;
 }) {
 	return Vue.extend({
 		props: {
 			widget: {
-				type: Object,
-				required: false
+				type: Object
 			},
 			isCustomizeMode: {
 				type: Boolean,
@@ -19,12 +17,18 @@ export default function <T extends Form>(data: {
 
 		computed: {
 			id(): string {
-				return this.widget ? this.widget.id : null;
+				return this.widget.id;
 			},
 
-			props(): Record<string, any> {
-				return this.widget ? this.widget.data : {};
+			props(): T {
+				return this.widget.data;
 			}
+		},
+
+		data() {
+			return {
+				bakedOldProps: null
+			};
 		},
 
 		created() {
@@ -41,30 +45,13 @@ export default function <T extends Form>(data: {
 					const defaultProps = data.props();
 					for (const prop of Object.keys(defaultProps)) {
 						if (this.props.hasOwnProperty(prop)) continue;
-						Vue.set(this.props, prop, defaultProps[prop].default);
+						Vue.set(this.props, prop, defaultProps[prop]);
 					}
 				}
 			},
 
-			async setting() {
-				const form = data.props();
-				for (const item of Object.keys(form)) {
-					form[item].default = this.props[item];
-				}
-				const { canceled, result } = await this.$root.form(data.name, form);
-				if (canceled) return;
-
-				for (const key of Object.keys(result)) {
-					Vue.set(this.props, key, result[key]);
-				}
-
-				this.save();
-			},
-
 			save() {
-				if (this.widget) {
-					this.$store.commit('deviceUser/updateWidget', this.widget);
-				}
+				this.$store.commit('deviceUser/updateWidget', this.widget);
 			}
 		}
 	});

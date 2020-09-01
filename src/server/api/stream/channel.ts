@@ -15,20 +15,12 @@ export default abstract class Channel {
 		return this.connection.user;
 	}
 
-	protected get userProfile() {
-		return this.connection.userProfile;
-	}
-
 	protected get following() {
 		return this.connection.following;
 	}
 
 	protected get muting() {
 		return this.connection.muting;
-	}
-
-	protected get followingChannels() {
-		return this.connection.followingChannels;
 	}
 
 	protected get subscriber() {

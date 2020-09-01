@@ -44,10 +44,6 @@ export const meta = {
 			validator: $.arr($.obj())
 		},
 
-		script: {
-			validator: $.str,
-		},
-
 		eyeCatchingImageId: {
 			validator: $.optional.nullable.type(ID),
 		},
@@ -119,7 +115,6 @@ export default define(meta, async (ps, user) => {
 		summary: ps.summary,
 		content: ps.content,
 		variables: ps.variables,
-		script: ps.script,
 		eyeCatchingImageId: eyeCatchingImage ? eyeCatchingImage.id : null,
 		userId: user.id,
 		visibility: 'public',

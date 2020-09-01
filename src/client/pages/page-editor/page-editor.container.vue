@@ -18,7 +18,7 @@
 	</header>
 	<p v-show="showBody" class="error" v-if="error != null">{{ $t('_pages.script.typeError', { slot: error.arg + 1, expect: $t(`script.types.${error.expect}`), actual: $t(`script.types.${error.actual}`) }) }}</p>
 	<p v-show="showBody" class="warn" v-if="warn != null">{{ $t('_pages.script.thereIsEmptySlot', { slot: warn.slot + 1 }) }}</p>
-	<div v-show="showBody" class="body">
+	<div v-show="showBody">
 		<slot></slot>
 	</div>
 </div>
@@ -28,8 +28,11 @@
 import Vue from 'vue';
 import { faBars, faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import i18n from '../../i18n';
 
 export default Vue.extend({
+	i18n,
+
 	props: {
 		expanded: {
 			type: Boolean,
@@ -75,11 +78,11 @@ export default Vue.extend({
 	position: relative;
 	overflow: hidden;
 	background: var(--panel);
-	border: solid 2px var(--X12);
+	border: solid 2px var(--jvhmlskx);
 	border-radius: 6px;
 
 	&:hover {
-		border: solid 2px var(--X13);
+		border: solid 2px var(--yakfpmhl);
 	}
 
 	&.warn {
@@ -144,18 +147,6 @@ export default Vue.extend({
 		margin: 0;
 		padding: 16px 16px 0 16px;
 		font-size: 14px;
-	}
-
-	> .body {
-		::v-deep .juejbjww, ::v-deep .eiipwacr {
-			&:not(.inline):first-child {
-				margin-top: 28px;
-			}
-
-			&:not(.inline):last-child {
-				margin-bottom: 20px;
-			}
-		}
 	}
 }
 </style>

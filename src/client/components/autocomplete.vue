@@ -426,7 +426,7 @@ export default Vue.extend({
 			}
 
 			&:hover {
-				background: var(--X3);
+				background: var(--yrnqrguo);
 			}
 
 			&[data-selected='true'] {

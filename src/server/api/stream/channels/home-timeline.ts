@@ -1,9 +1,8 @@
 import autobind from 'autobind-decorator';
-import { isMutedUserRelated } from '../../../../misc/is-muted-user-related';
+import shouldMuteThisNote from '../../../../misc/should-mute-this-note';
 import Channel from '../channel';
 import { Notes } from '../../../../models';
 import { PackedNote } from '../../../../models/repositories/note';
-import { checkWordMute } from '../../../../misc/check-word-mute';
 
 export default class extends Channel {
 	public readonly chName = 'homeTimeline';
@@ -18,12 +17,8 @@ export default class extends Channel {
 
 	@autobind
 	private async onNote(note: PackedNote) {
-		if (note.channelId) {
-			if (!this.followingChannels.includes(note.channelId)) return;
-		} else {
-			// その投稿のユーザーをフォローしていなかったら弾く
-			if ((this.user!.id !== note.userId) && !this.following.includes(note.userId)) return;
-		}
+		// その投稿のユーザーをフォローしていなかったら弾く
+		if (this.user!.id !== note.userId && !this.following.includes(note.userId)) return;
 
 		if (['followers', 'specified'].includes(note.visibility)) {
 			note = await Notes.pack(note.id, this.user!, {
@@ -55,14 +50,7 @@ export default class extends Channel {
 		}
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
-		if (isMutedUserRelated(note, this.muting)) return;
-
-		// 流れてきたNoteがミュートすべきNoteだったら無視する
-		// TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)
-		// 現状では、ワードミュートにおけるMutedNoteレコードの追加処理はストリーミングに流す処理と並列で行われるため、
-		// レコードが追加されるNoteでも追加されるより先にここのストリーミングの処理に到達することが起こる。
-		// そのためレコードが存在するかのチェックでは不十分なので、改めてcheckWordMuteを呼んでいる
-		if (this.userProfile && await checkWordMute(note, this.user, this.userProfile.mutedWords)) return;
+		if (shouldMuteThisNote(note, this.muting)) return;
 
 		this.send('note', note);
 	}

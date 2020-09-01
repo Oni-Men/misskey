@@ -2,7 +2,6 @@ import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typ
 import { User } from './user';
 import { Note } from './note';
 import { id } from '../id';
-import { Channel } from './channel';
 
 @Entity()
 @Index(['userId', 'noteId'], { unique: true })
@@ -30,34 +29,15 @@ export class NoteUnread {
 	@JoinColumn()
 	public note: Note | null;
 
-	/**
-	 * メンションか否か
-	 */
-	@Index()
-	@Column('boolean')
-	public isMentioned: boolean;
-
-	/**
-	 * ダイレクト投稿か否か
-	 */
-	@Index()
-	@Column('boolean')
-	public isSpecified: boolean;
-
-	//#region Denormalized fields
-	@Index()
 	@Column({
 		...id(),
 		comment: '[Denormalized]'
 	})
 	public noteUserId: User['id'];
 
-	@Index()
-	@Column({
-		...id(),
-		nullable: true,
-		comment: '[Denormalized]'
-	})
-	public noteChannelId: Channel['id'] | null;
-	//#endregion
+	/**
+	 * ダイレクト投稿か
+	 */
+	@Column('boolean')
+	public isSpecified: boolean;
 }

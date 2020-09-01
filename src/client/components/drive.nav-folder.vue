@@ -15,8 +15,11 @@
 <script lang="ts">
 import Vue from 'vue';
 import { faCloud } from '@fortawesome/free-solid-svg-icons';
+import i18n from '../i18n';
 
 export default Vue.extend({
+	i18n,
+
 	props: {
 		folder: {
 			type: Object,

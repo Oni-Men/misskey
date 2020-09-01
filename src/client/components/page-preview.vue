@@ -35,7 +35,6 @@ export default Vue.extend({
 	border: solid var(--lineWidth) var(--urlPreviewBorder);
 	border-radius: 4px;
 	overflow: hidden;
-	border: 1px solid var(--divider);
 
 	&:hover {
 		text-decoration: none;
@@ -43,8 +42,9 @@ export default Vue.extend({
 	}
 
 	> .thumbnail {
-		width: 100%;
-		height: 200px;
+		position: absolute;
+		width: 100px;
+		height: 100%;
 		background-position: center;
 		background-size: cover;
 		display: flex;

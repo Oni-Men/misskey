@@ -35,8 +35,5 @@ export default define(meta, async (ps, me) => {
 		throw new Error('cannot show info of admin');
 	}
 
-	return {
-		...user,
-		token: user.token != null ? '<MASKED>' : user.token,
-	};
+	return user;
 });

@@ -20,7 +20,6 @@
 				:pattern="pattern"
 				:autocomplete="autocomplete"
 				:spellcheck="spellcheck"
-				:step="step"
 				@focus="focused = true"
 				@blur="focused = false"
 				@keydown="$emit('keydown', $event)"
@@ -37,7 +36,6 @@
 				:pattern="pattern"
 				:autocomplete="autocomplete"
 				:spellcheck="spellcheck"
-				:step="step"
 				@focus="focused = true"
 				@blur="focused = false"
 				@keydown="$emit('keydown', $event)"
@@ -64,7 +62,7 @@
 		<div class="suffix" ref="suffix"><slot name="suffix"></slot></div>
 	</div>
 	<button class="save _textButton" v-if="save && changed" @click="() => { changed = false; save(); }">{{ $t('save') }}</button>
-	<div class="desc _caption"><slot name="desc"></slot></div>
+	<div class="desc"><slot name="desc"></slot></div>
 </div>
 </template>
 
@@ -114,9 +112,6 @@ export default Vue.extend({
 			required: false
 		},
 		spellcheck: {
-			required: false
-		},
-		step: {
 			required: false
 		},
 		debounce: {
@@ -169,7 +164,7 @@ export default Vue.extend({
 		},
 		v(v) {
 			if (this.type === 'number') {
-				this.$emit('input', parseFloat(v));
+				this.$emit('input', parseInt(v, 10));
 			} else {
 				this.$emit('input', v);
 			}
@@ -302,7 +297,7 @@ export default Vue.extend({
 			pointer-events: none;
 			transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 			transition-duration: 0.3s;
-			font-size: 1em;
+			font-size: 16px;
 			line-height: 32px;
 			color: var(--inputLabel);
 			pointer-events: none;
@@ -317,7 +312,7 @@ export default Vue.extend({
 			top: -17px;
 			left: 0 !important;
 			pointer-events: none;
-			font-size: 1em;
+			font-size: 16px;
 			line-height: 32px;
 			color: var(--inputLabel);
 			pointer-events: none;
@@ -348,7 +343,7 @@ export default Vue.extend({
 			padding: 0;
 			font: inherit;
 			font-weight: normal;
-			font-size: 1em;
+			font-size: 16px;
 			line-height: $height;
 			color: var(--inputText);
 			background: transparent;
@@ -369,7 +364,7 @@ export default Vue.extend({
 			position: absolute;
 			z-index: 1;
 			top: 0;
-			font-size: 1em;
+			font-size: 16px;
 			line-height: 32px;
 			color: var(--inputLabel);
 			pointer-events: none;
@@ -401,11 +396,13 @@ export default Vue.extend({
 
 	> .save {
 		margin: 6px 0 0 0;
-		font-size: 0.8em;
+		font-size: 13px;
 	}
 
 	> .desc {
 		margin: 6px 0 0 0;
+		font-size: 13px;
+		opacity: 0.7;
 
 		&:empty {
 			display: none;

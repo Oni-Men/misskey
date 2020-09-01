@@ -34,7 +34,9 @@ export default Vue.extend({
 			default: false
 		},
 		// specify the parent element
-		parentElement: {}
+		parentElement: {
+			type: Object
+		}
 	},
 	data() {
 		return {
@@ -67,7 +69,7 @@ export default Vue.extend({
 
 				if (this.$refs.gridOuter) {
 					let height = 287;
-					const parent = this.parentElement || this.$parent.$el;
+					const parent = this.$props.parentElement || this.$parent.$el;
 
 					if (this.$refs.gridOuter.clientHeight) {
 						height = this.$refs.gridOuter.clientHeight;
@@ -80,11 +82,6 @@ export default Vue.extend({
 					this.gridInnerStyle = {};
 				}
 			});
-		}
-	},
-	watch: {
-		parentElement() {
-			this.size();
 		}
 	}
 });
@@ -114,7 +111,7 @@ export default Vue.extend({
 
 			> * {
 				overflow: hidden;
-				border-radius: 6px;
+				border-radius: 4px;
 			}
 
 			&[data-count="1"] {

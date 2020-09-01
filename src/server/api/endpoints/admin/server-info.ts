@@ -5,13 +5,12 @@ import define from '../../define';
 import redis from '../../../../db/redis';
 
 export const meta = {
-	requireCredential: true as const,
-	requireAdmin: true,
+	requireCredential: false as const,
 
 	desc: {
 	},
 
-	tags: ['admin', 'meta'],
+	tags: ['meta'],
 
 	params: {
 	},

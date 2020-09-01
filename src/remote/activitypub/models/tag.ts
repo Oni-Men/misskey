@@ -1,18 +1,26 @@
-import { toArray } from '../../../prelude/array';
-import { IObject, isHashtag, IApHashtag } from '../type';
+import { IIcon } from './icon';
+import { IIdentifier } from './identifier';
 
-export function extractApHashtags(tags: IObject | IObject[] | null | undefined) {
+/***
+ * tag (ActivityPub)
+ */
+export type ITag = {
+	id: string;
+	type: string;
+	name?: string;
+	value?: string;
+	updated?: Date;
+	icon?: IIcon;
+	identifier?: IIdentifier;
+};
+
+export function extractHashtags(tags: ITag[] | null | undefined): string[] {
 	if (tags == null) return [];
 
-	const hashtags = extractApHashtagObjects(tags);
+	const hashtags = tags.filter(tag => tag.type === 'Hashtag' && typeof tag.name == 'string');
 
 	return hashtags.map(tag => {
-		const m = tag.name.match(/^#(.+)/);
+		const m = tag.name ? tag.name.match(/^#(.+)/) : null;
 		return m ? m[1] : null;
-	}).filter((x): x is string => x != null);
-}
-
-export function extractApHashtagObjects(tags: IObject | IObject[] | null | undefined): IApHashtag[] {
-	if (tags == null) return [];
-	return toArray(tags).filter(isHashtag);
+	}).filter(x => x != null) as string[];
 }

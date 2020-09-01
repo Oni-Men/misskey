@@ -13,7 +13,7 @@ export const meta = {
 		'en-US': 'Block a user.'
 	},
 
-	tags: ['account'],
+	tags: ['blocking', 'users'],
 
 	limit: {
 		duration: ms('1hour'),

@@ -3,9 +3,9 @@
 	<nav>
 		<div class="path" @contextmenu.prevent.stop="() => {}">
 			<x-nav-folder :class="{ current: folder == null }"/>
-			<template v-for="f in hierarchyFolders">
-				<span class="separator" :key="f.id + ':separator'"><fa :icon="faAngleRight"/></span>
-				<x-nav-folder :folder="f" :key="f.id"/>
+			<template v-for="folder in hierarchyFolders">
+				<span class="separator"><fa :icon="faAngleRight"/></span>
+				<x-nav-folder :folder="folder" :key="folder.id"/>
 			</template>
 			<span class="separator" v-if="folder != null"><fa :icon="faAngleRight"/></span>
 			<span class="folder current" v-if="folder != null">{{ folder.name }}</span>
@@ -19,17 +19,17 @@
 		@drop.prevent.stop="onDrop"
 	>
 		<div class="contents" ref="contents">
-			<div class="folders" ref="foldersContainer" v-show="folders.length > 0">
-				<x-folder v-for="f in folders" :key="f.id" class="folder" :folder="f" :select-mode="select === 'folder'" :is-selected="selectedFolders.some(x => x.id === f.id)" @chosen="chooseFolder"/>
+			<div class="folders" ref="foldersContainer" v-if="folders.length > 0">
+				<x-folder v-for="folder in folders" :key="folder.id" class="folder" :folder="folder"/>
 				<!-- SEE: https://stackoverflow.com/questions/18744164/flex-box-align-last-row-to-grid -->
-				<div class="padding" v-for="(n, i) in 16" :key="i"></div>
-				<mk-button ref="moreFolders" v-if="moreFolders">{{ $t('loadMore') }}</mk-button>
+				<div class="padding" v-for="n in 16"></div>
+				<mk-button v-if="moreFolders">{{ $t('loadMore') }}</mk-button>
 			</div>
-			<div class="files" ref="filesContainer" v-show="files.length > 0">
-				<x-file v-for="file in files" :key="file.id" class="file" :file="file" :select-mode="select === 'file'" :is-selected="selectedFiles.some(x => x.id === file.id)" @chosen="chooseFile"/>
+			<div class="files" ref="filesContainer" v-if="files.length > 0">
+				<x-file v-for="file in files" :key="file.id" class="file" :file="file" :select-mode="selectMode"/>
 				<!-- SEE: https://stackoverflow.com/questions/18744164/flex-box-align-last-row-to-grid -->
-				<div class="padding" v-for="(n, i) in 16" :key="i"></div>
-				<mk-button ref="loadMoreFiles" @click="fetchMoreFiles" v-show="moreFiles">{{ $t('loadMore') }}</mk-button>
+				<div class="padding" v-for="n in 16"></div>
+				<mk-button v-if="moreFiles" @click="fetchMoreFiles">{{ $t('loadMore') }}</mk-button>
 			</div>
 			<div class="empty" v-if="files.length == 0 && folders.length == 0 && !fetching">
 				<p v-if="draghover">{{ $t('empty-draghover') }}</p>
@@ -48,6 +48,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import i18n from '../i18n';
 import XNavFolder from './drive.nav-folder.vue';
 import XFolder from './drive.folder.vue';
 import XFile from './drive.file.vue';
@@ -55,6 +56,8 @@ import XUploader from './uploader.vue';
 import MkButton from './ui/button.vue';
 
 export default Vue.extend({
+	i18n,
+
 	components: {
 		XNavFolder,
 		XFolder,
@@ -78,10 +81,10 @@ export default Vue.extend({
 			required: false,
 			default: false
 		},
-		select: {
-			type: String,
+		selectMode: {
+			type: Boolean,
 			required: false,
-			default: null
+			default: false
 		}
 	},
 
@@ -99,7 +102,6 @@ export default Vue.extend({
 			moreFolders: false,
 			hierarchyFolders: [],
 			selectedFiles: [],
-			selectedFolders: [],
 			uploadings: [],
 			connection: null,
 
@@ -116,13 +118,6 @@ export default Vue.extend({
 
 			fetching: true,
 
-			ilFilesObserver: new IntersectionObserver(
-				(entries) => entries.some((entry) => entry.isIntersecting)
-				&& !this.fetching && this.moreFiles &&
-					this.fetchMoreFiles()
-			),
-			moreFilesElement: null as Element,
-
 			faAngleRight
 		};
 	},
@@ -134,12 +129,6 @@ export default Vue.extend({
 	},
 
 	mounted() {
-		if (this.$store.state.device.enableInfiniteScroll && this.$refs.loadMoreFiles) {
-			this.$nextTick(() => {
-				this.ilFilesObserver.observe((this.$refs.loadMoreFiles as Vue).$el)
-			});
-		}
-
 		this.connection = this.$root.stream.useSharedConnection('drive');
 
 		this.connection.on('fileCreated', this.onStreamDriveFileCreated);
@@ -156,17 +145,8 @@ export default Vue.extend({
 		}
 	},
 
-	activated() {
-		if (this.$store.state.device.enableInfiniteScroll) {
-			this.$nextTick(() => {
-				this.ilFilesObserver.observe((this.$refs.loadMoreFiles as Vue).$el)
-			});
-		}
-	},
-
 	beforeDestroy() {
 		this.connection.dispose();
-		this.ilFilesObserver.disconnect();
 	},
 
 	methods: {
@@ -408,25 +388,6 @@ export default Vue.extend({
 				} else {
 					this.selectedFiles = [file];
 					this.$emit('change-selection', [file]);
-				}
-			}
-		},
-
-		chooseFolder(folder) {
-			const isAlreadySelected = this.selectedFolders.some(f => f.id == folder.id);
-			if (this.multiple) {
-				if (isAlreadySelected) {
-					this.selectedFolders = this.selectedFolders.filter(f => f.id != folder.id);
-				} else {
-					this.selectedFolders.push(folder);
-				}
-				this.$emit('change-selection', this.selectedFolders);
-			} else {
-				if (isAlreadySelected) {
-					this.$emit('selected', folder);
-				} else {
-					this.selectedFolders = [folder];
-					this.$emit('change-selection', [folder]);
 				}
 			}
 		},

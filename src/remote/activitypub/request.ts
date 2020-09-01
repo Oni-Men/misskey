@@ -1,12 +1,19 @@
 import * as https from 'https';
 import { sign } from 'http-signature';
 import * as crypto from 'crypto';
+import * as cache from 'lookup-dns-cache';
 
 import config from '../../config';
 import { ILocalUser } from '../../models/entities/user';
 import { UserKeypairs } from '../../models';
 import { ensure } from '../../prelude/ensure';
-import { getAgentByUrl } from '../../misc/fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const agent = config.proxy
+	? new HttpsProxyAgent(config.proxy)
+	: new https.Agent({
+			lookup: cache.lookup,
+		});
 
 export default async (user: ILocalUser, url: string, object: any) => {
 	const timeout = 10 * 1000;
@@ -25,7 +32,7 @@ export default async (user: ILocalUser, url: string, object: any) => {
 
 	await new Promise((resolve, reject) => {
 		const req = https.request({
-			agent: getAgentByUrl(new URL(`https://example.net`)),
+			agent,
 			protocol,
 			hostname,
 			port,
@@ -49,7 +56,7 @@ export default async (user: ILocalUser, url: string, object: any) => {
 			authorizationHeaderName: 'Signature',
 			key: keypair.privateKey,
 			keyId: `${config.url}/users/${user.id}#main-key`,
-			headers: ['(request-target)', 'date', 'host', 'digest']
+			headers: ['date', 'host', 'digest']
 		});
 
 		req.on('timeout', () => req.abort());

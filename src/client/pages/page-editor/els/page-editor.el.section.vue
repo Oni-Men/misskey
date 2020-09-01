@@ -2,16 +2,16 @@
 <x-container @remove="() => $emit('remove')" :draggable="true">
 	<template #header><fa :icon="faStickyNote"/> {{ value.title }}</template>
 	<template #func>
-		<button @click="rename()" class="_button">
+		<button @click="rename()">
 			<fa :icon="faPencilAlt"/>
 		</button>
-		<button @click="add()" class="_button">
+		<button @click="add()">
 			<fa :icon="faPlus"/>
 		</button>
 	</template>
 
 	<section class="ilrvjyvi">
-		<x-blocks class="children" v-model="value.children" :hpml="hpml"/>
+		<x-blocks class="children" v-model="value.children" :ai-script="aiScript"/>
 	</section>
 </x-container>
 </template>
@@ -21,9 +21,12 @@ import Vue from 'vue';
 import { v4 as uuid } from 'uuid';
 import { faPlus, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { faStickyNote } from '@fortawesome/free-regular-svg-icons';
+import i18n from '../../../i18n';
 import XContainer from '../page-editor.container.vue';
 
 export default Vue.extend({
+	i18n,
+
 	components: {
 		XContainer
 	},
@@ -34,7 +37,7 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		hpml: {
+		aiScript: {
 			required: true,
 		},
 	},

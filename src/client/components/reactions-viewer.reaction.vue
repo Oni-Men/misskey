@@ -1,17 +1,15 @@
 <template>
 <button
 	class="hkzvhatu _button"
-	:class="{ reacted: note.myReaction == reaction, canToggle }"
+	:class="{ reacted: note.myReaction == reaction }"
 	@click="toggleReaction(reaction)"
 	v-if="count > 0"
-	@touchstart="onMouseover"
 	@mouseover="onMouseover"
 	@mouseleave="onMouseleave"
-	@touchend="onMouseleave"
 	ref="reaction"
-	v-particle="canToggle"
+	v-particle
 >
-	<x-reaction-icon :reaction="reaction" :custom-emojis="note.emojis" ref="icon"/>
+	<x-reaction-icon :reaction="reaction" ref="icon"/>
 	<span>{{ count }}</span>
 </button>
 </template>
@@ -42,6 +40,11 @@ export default Vue.extend({
 			type: Object,
 			required: true,
 		},
+		canToggle: {
+			type: Boolean,
+			required: false,
+			default: true,
+		},
 	},
 	data() {
 		return {
@@ -51,9 +54,12 @@ export default Vue.extend({
 		};
 	},
 	computed: {
-		canToggle(): boolean {
-			return !this.reaction.match(/@\w/) && this.$store.getters.isSignedIn;
+		isMe(): boolean {
+			return this.$store.getters.isSignedIn && this.$store.state.i.id === this.note.userId;
 		},
+	},
+	mounted() {
+		if (!this.isInitial) this.anime();
 	},
 	watch: {
 		count(newCount, oldCount) {
@@ -61,11 +67,9 @@ export default Vue.extend({
 			if (this.details != null) this.openDetails();
 		},
 	},
-	mounted() {
-		if (!this.isInitial) this.anime();
-	},
 	methods: {
 		toggleReaction() {
+			if (this.isMe) return;
 			if (!this.canToggle) return;
 
 			const oldReaction = this.note.myReaction;
@@ -88,17 +92,16 @@ export default Vue.extend({
 			}
 		},
 		onMouseover() {
-			if (this.isHovering) return;
 			this.isHovering = true;
 			this.detailsTimeoutId = setTimeout(this.openDetails, 300);
 		},
 		onMouseleave() {
-			if (!this.isHovering) return;
 			this.isHovering = false;
 			clearTimeout(this.detailsTimeoutId);
 			this.closeDetails();
 		},
 		openDetails() {
+			if (this.$root.isMobile) return;
 			this.$root.api('notes/reactions', {
 				noteId: this.note.id,
 				type: this.reaction,
@@ -141,27 +144,19 @@ export default Vue.extend({
 	padding: 0 6px;
 	border-radius: 4px;
 
-	&.canToggle {
+	&.reacted {
+		background: var(--accent);
+
+		> span {
+			color: #fff;
+		}
+	}
+
+	&:not(.reacted) {
 		background: rgba(0, 0, 0, 0.05);
 
 		&:hover {
 			background: rgba(0, 0, 0, 0.1);
-		}
-	}
-
-	&:not(.canToggle) {
-		cursor: default;
-	}
-
-	&.reacted {
-		background: var(--accent);
-
-		&:hover {
-			background: var(--accent);
-		}
-
-		> span {
-			color: #fff;
 		}
 	}
 

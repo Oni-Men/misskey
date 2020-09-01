@@ -104,8 +104,7 @@ export default define(meta, async (ps, me) => {
 	} as UserGroupInvitation);
 
 	// 通知を作成
-	createNotification(user.id, 'groupInvited', {
-		notifierId: me.id,
+	createNotification(user.id, me.id, 'groupInvited', {
 		userGroupInvitationId: invitation.id
 	});
 });

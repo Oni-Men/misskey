@@ -4,7 +4,6 @@ import { Users } from '../../models';
 import { User } from '../../models/entities/user';
 import { renderPerson } from '../../remote/activitypub/renderer/person';
 import { deliverToFollowers } from '../../remote/activitypub/deliver-manager';
-import { deliverToRelays } from '../relay';
 
 export async function publishToFollowers(userId: User['id']) {
 	const user = await Users.findOne(userId);
@@ -14,6 +13,5 @@ export async function publishToFollowers(userId: User['id']) {
 	if (Users.isLocalUser(user)) {
 		const content = renderActivity(renderUpdate(await renderPerson(user), user));
 		deliverToFollowers(user, content);
-		deliverToRelays(user, content);
 	}
 }

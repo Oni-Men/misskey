@@ -95,7 +95,7 @@ export default Vue.extend({
 		-webkit-appearance: none;
 		-moz-appearance: none;
 		appearance: none;
-		background: var(--X10);
+		background: var(--xxubwiul);
 		height: 7px;
 		margin: 0 8px;
 		outline: 0;

@@ -1,5 +1,5 @@
 <template>
-<div class="tivcixzd" :data-done="closed || isVoted">
+<div class="mk-poll" :data-done="closed || isVoted">
 	<ul>
 		<li v-for="(choice, i) in poll.choices" :key="i" @click="vote(i)" :class="{ voted: choice.voted }">
 			<div class="backdrop" :style="{ 'width': `${showResult ? (choice.votes / total * 100) : 0}%` }"></div>
@@ -24,9 +24,11 @@
 <script lang="ts">
 import Vue from 'vue';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import i18n from '../i18n';
 import { sum } from '../../prelude/array';
 
 export default Vue.extend({
+	i18n,
 	props: {
 		note: {
 			type: Object,
@@ -52,9 +54,9 @@ export default Vue.extend({
 		},
 		timer(): string {
 			return this.$t(
-				this.remaining >= 86400 ? '_poll.remainingDays' :
-				this.remaining >= 3600 ? '_poll.remainingHours' :
-				this.remaining >= 60 ? '_poll.remainingMinutes' : '_poll.remainingSeconds', {
+				this.remaining > 86400 ? '_poll.remainingDays' :
+				this.remaining > 3600 ? '_poll.remainingHours' :
+				this.remaining > 60 ? '_poll.remainingMinutes' : '_poll.remainingSeconds', {
 					s: Math.floor(this.remaining % 60),
 					m: Math.floor(this.remaining / 60) % 60,
 					h: Math.floor(this.remaining / 3600) % 24,
@@ -97,7 +99,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-.tivcixzd {
+.mk-poll {
 	> ul {
 		display: block;
 		margin: 0;
@@ -109,6 +111,7 @@ export default Vue.extend({
 			position: relative;
 			margin: 4px 0;
 			padding: 4px 8px;
+			width: 100%;
 			border: solid 1px var(--divider);
 			border-radius: 4px;
 			overflow: hidden;

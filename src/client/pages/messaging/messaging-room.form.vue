@@ -27,10 +27,12 @@ import Vue from 'vue';
 import { faPaperPlane, faPhotoVideo, faLaughSquint } from '@fortawesome/free-solid-svg-icons';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import * as autosize from 'autosize';
+import i18n from '../../i18n';
 import { formatTimeString } from '../../../misc/format-time-string';
 import { selectFile } from '../../scripts/select-file';
 
 export default Vue.extend({
+	i18n,
 	components: {
 		XUploader: () => import('../../components/uploader.vue').then(m => m.default),
 	},
@@ -53,7 +55,7 @@ export default Vue.extend({
 		};
 	},
 	computed: {
-		draftKey(): string {
+		draftId(): string {
 			return this.user ? 'user:' + this.user.id : 'group:' + this.group.id;
 		},
 		canSend(): boolean {
@@ -79,7 +81,7 @@ export default Vue.extend({
 		autosize(this.$refs.text);
 
 		// 書きかけの投稿を復元
-		const draft = JSON.parse(localStorage.getItem('message_drafts') || '{}')[this.draftKey];
+		const draft = JSON.parse(localStorage.getItem('message_drafts') || '{}')[this.draftId];
 		if (draft) {
 			this.text = draft.data.text;
 			this.file = draft.data.file;
@@ -151,7 +153,7 @@ export default Vue.extend({
 		},
 
 		onKeypress(e) {
-			if ((e.which == 10 || e.which == 13) && (e.ctrlKey || e.metaKey) && this.canSend) {
+			if ((e.which == 10 || e.which == 13) && e.ctrlKey && this.canSend) {
 				this.send();
 			}
 		},
@@ -199,7 +201,7 @@ export default Vue.extend({
 		saveDraft() {
 			const data = JSON.parse(localStorage.getItem('message_drafts') || '{}');
 
-			data[this.draftKey] = {
+			data[this.draftId] = {
 				updatedAt: new Date(),
 				data: {
 					text: this.text,
@@ -213,7 +215,7 @@ export default Vue.extend({
 		deleteDraft() {
 			const data = JSON.parse(localStorage.getItem('message_drafts') || '{}');
 
-			delete data[this.draftKey];
+			delete data[this.draftId];
 
 			localStorage.setItem('message_drafts', JSON.stringify(data));
 		},

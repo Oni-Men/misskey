@@ -2,7 +2,6 @@ import { PrimaryColumn, Entity, Index, JoinColumn, Column, OneToOne } from 'type
 import { id } from '../id';
 import { Note } from './note';
 import { User } from './user';
-import { noteVisibilities } from '../../types';
 
 @Entity()
 export class Poll {
@@ -35,10 +34,10 @@ export class Poll {
 
 	//#region Denormalized fields
 	@Column('enum', {
-		enum: noteVisibilities,
+		enum: ['public', 'home', 'followers', 'specified'],
 		comment: '[Denormalized]'
 	})
-	public noteVisibility: typeof noteVisibilities[number];
+	public noteVisibility: 'public' | 'home' | 'followers' | 'specified';
 
 	@Index()
 	@Column({

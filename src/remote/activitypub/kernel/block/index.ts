@@ -1,22 +1,32 @@
-import { IBlock } from '../../type';
+import config from '../../../../config';
+import { IBlock, getApId } from '../../type';
 import block from '../../../../services/blocking/create';
+import { apLogger } from '../../logger';
+import { Users } from '../../../../models';
 import { IRemoteUser } from '../../../../models/entities/user';
-import DbResolver from '../../db-resolver';
 
-export default async (actor: IRemoteUser, activity: IBlock): Promise<string> => {
-	// ※ activity.objectにブロック対象があり、それは存在するローカルユーザーのはず
+const logger = apLogger;
 
-	const dbResolver = new DbResolver();
-	const blockee = await dbResolver.getUserFromApId(activity.object);
+export default async (actor: IRemoteUser, activity: IBlock): Promise<void> => {
+	const id = getApId(activity.object);
+
+	const uri = getApId(activity);
+
+	logger.info(`Block: ${uri}`);
+
+	if (!id.startsWith(config.url + '/')) {
+		return;
+	}
+
+	const blockee = await Users.findOne(id.split('/').pop());
 
 	if (blockee == null) {
-		return `skip: blockee not found`;
+		throw new Error('blockee not found');
 	}
 
 	if (blockee.host != null) {
-		return `skip: ブロックしようとしているユーザーはローカルユーザーではありません`;
+		throw new Error('ブロックしようとしているユーザーはローカルユーザーではありません');
 	}
 
-	await block(actor, blockee);
-	return `ok`;
+	block(actor, blockee);
 };

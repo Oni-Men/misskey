@@ -54,7 +54,6 @@ export default class Logger {
 	private log(level: Level, message: string, data?: Record<string, any> | null, important = false, subDomains: Domain[] = [], store = true): void {
 		if (program.quiet) return;
 		if (!this.store) store = false;
-		if (level === 'debug') store = false;
 
 		if (this.parentLogger) {
 			this.parentLogger.log(level, message, data, important, [this.domain].concat(subDomains), store);

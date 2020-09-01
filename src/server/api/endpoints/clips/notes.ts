@@ -4,7 +4,7 @@ import define from '../../define';
 import { Clips, Notes } from '../../../../models';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query';
-import { generateMutedUserQuery } from '../../common/generate-muted-user-query';
+import { generateMuteQuery } from '../../common/generate-mute-query';
 
 export const meta = {
 	tags: ['account', 'notes', 'clips'],
@@ -57,7 +57,7 @@ export default define(meta, async (ps, user) => {
 		.setParameters(clipQuery.getParameters());
 
 	generateVisibilityQuery(query, user);
-	generateMutedUserQuery(query, user);
+	generateMuteQuery(query, user);
 
 	const notes = await query
 		.take(ps.limit!)

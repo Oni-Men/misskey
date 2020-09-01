@@ -1,14 +1,17 @@
 <template>
-<div class="fgmtyycl _panel _shadow" :style="{ top: top + 'px', left: left + 'px' }">
+<div class="fgmtyycl _panel" :style="{ top: top + 'px', left: left + 'px' }">
 	<mk-url-preview :url="url"/>
 </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import i18n from '../i18n';
 import MkUrlPreview from './url-preview.vue';
 
 export default Vue.extend({
+	i18n,
+
 	components: {
 		MkUrlPreview
 	},
@@ -33,7 +36,7 @@ export default Vue.extend({
 
 	mounted() {
 		const rect = this.source.getBoundingClientRect();
-		const x = Math.max((rect.left + (this.source.offsetWidth / 2)) - (300 / 2), 6) + window.pageXOffset;
+		const x = ((rect.left + (this.source.offsetWidth / 2)) - (300 / 2)) + window.pageXOffset;
 		const y = rect.top + this.source.offsetHeight + window.pageYOffset;
 
 		this.top = y;
@@ -47,7 +50,6 @@ export default Vue.extend({
 	position: absolute;
 	z-index: 11000;
 	width: 500px;
-	max-width: calc(90vw - 12px);
 	overflow: hidden;
 	pointer-events: none;
 }

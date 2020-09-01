@@ -13,11 +13,7 @@
 		>
 			<slot></slot>
 		</select>
-		<div class="suffix">
-			<slot name="suffix">
-				<fa :icon="faChevronDown"/>
-			</slot>
-		</div>
+		<div class="suffix"><slot name="suffix"></slot></div>
 	</div>
 	<div class="text"><slot name="text"></slot></div>
 </div>
@@ -25,7 +21,6 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 export default Vue.extend({
 	props: {
@@ -48,8 +43,7 @@ export default Vue.extend({
 	},
 	data() {
 		return {
-			focused: false,
-			faChevronDown,
+			focused: false
 		};
 	},
 	computed: {
@@ -141,7 +135,7 @@ export default Vue.extend({
 			pointer-events: none;
 			transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 			transition-duration: 0.3s;
-			font-size: 1em;
+			font-size: 16px;
 			line-height: 32px;
 			pointer-events: none;
 			//will-change transform
@@ -156,15 +150,13 @@ export default Vue.extend({
 			padding: 0;
 			font: inherit;
 			font-weight: normal;
-			font-size: 1em;
+			font-size: 16px;
 			height: 32px;
 			background: none;
 			border: none;
 			border-radius: 0;
 			outline: none;
 			box-shadow: none;
-			appearance: none;
-			-webkit-appearance: none;
 			color: var(--fg);
 
 			option,
@@ -178,9 +170,9 @@ export default Vue.extend({
 			display: block;
 			align-self: center;
 			justify-self: center;
-			font-size: 1em;
+			font-size: 16px;
 			line-height: 32px;
-			color: var(--inputLabel);
+			color: rgba(#000, 0.54);
 			pointer-events: none;
 
 			&:empty {
@@ -204,7 +196,7 @@ export default Vue.extend({
 
 	> .text {
 		margin: 6px 0;
-		font-size: 0.8em;
+		font-size: 13px;
 
 		&:empty {
 			display: none;

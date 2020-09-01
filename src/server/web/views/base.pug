@@ -40,7 +40,7 @@ html
 			if (theme) {
 				for (const [k, v] of Object.entries(JSON.parse(theme))) {
 					document.documentElement.style.setProperty(`--${k}`, v.toString());
-					if (k === 'htmlThemeColor') {
+					if (k === 'html') {
 						for (const tag of document.head.children) {
 							if (tag.tagName === 'META' && tag.getAttribute('name') === 'theme-color') {
 								tag.setAttribute('content', v);
@@ -61,8 +61,7 @@ html
 				document.documentElement.style.backgroundImage = `url(${wallpaper})`;
 			}
 
-	//- https://qiita.com/junya/items/3ff380878f26ca447f85
-	body(ontouchstart='')
+	body
 		noscript: p
 			| JavaScriptを有効にしてください
 			br

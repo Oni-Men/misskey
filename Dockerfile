@@ -1,4 +1,4 @@
-FROM node:14.4.0-alpine AS base
+FROM node:12.11.1-alpine AS base
 
 ENV NODE_ENV=production
 
@@ -12,7 +12,6 @@ RUN apk add --no-cache \
     autoconf \
     automake \
     file \
-		git \
     g++ \
     gcc \
     libc-dev \
@@ -23,7 +22,7 @@ RUN apk add --no-cache \
     python \
     zlib-dev
 
-COPY package.json yarn.lock ./
+COPY package.json ./
 RUN yarn install
 COPY . ./
 RUN yarn build

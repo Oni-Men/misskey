@@ -24,8 +24,11 @@ import Vue from 'vue';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import MkSelect from '../../components/ui/select.vue';
 import MkSwitch from '../../components/ui/switch.vue';
+import i18n from '../../i18n';
 
 export default Vue.extend({
+	i18n,
+
 	components: {
 		MkSelect,
 		MkSwitch,

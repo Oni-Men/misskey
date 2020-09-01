@@ -7,7 +7,6 @@ import { insertModerationLog } from '../../../../../services/insert-moderation-l
 import { ApiError } from '../../../error';
 import { ID } from '../../../../../misc/cafy-id';
 import rndstr from 'rndstr';
-import { publishBroadcastStream } from '../../../../../services/stream';
 
 export const meta = {
 	desc: {
@@ -53,10 +52,6 @@ export default define(meta, async (ps, me) => {
 	});
 
 	await getConnection().queryResultCache!.remove(['meta_emojis']);
-
-	publishBroadcastStream('emojiAdded', {
-		emoji: await Emojis.pack(emoji.id)
-	});
 
 	insertModerationLog(me, 'addEmoji', {
 		emojiId: emoji.id

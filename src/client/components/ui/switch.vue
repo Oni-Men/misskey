@@ -5,7 +5,7 @@
 	role="switch"
 	:aria-checked="checked"
 	:aria-disabled="disabled"
-	@click.prevent="toggle"
+	@click="toggle"
 >
 	<input
 		type="checkbox"
@@ -83,8 +83,8 @@ export default Vue.extend({
 
 	&.checked {
 		> .button {
-			background-color: var(--X10);
-			border-color: var(--X10);
+			background-color: var(--xxubwiul);
+			border-color: var(--xxubwiul);
 
 			> * {
 				background-color: var(--accent);
@@ -108,7 +108,7 @@ export default Vue.extend({
 		margin: 3px 0 0 0;
 		width: 34px;
 		height: 14px;
-		background: var(--X6);
+		background: var(--nhzhphzx);
 		outline: none;
 		border-radius: 14px;
 		transition: inherit;

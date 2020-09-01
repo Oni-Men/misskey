@@ -22,7 +22,6 @@
 				</label>
 			</div>
 		</div>
-		<mk-switch v-model="syncDeviceDarkMode">{{ $t('syncDeviceDarkMode') }}</mk-switch>
 	</div>
 	<div class="_content">
 		<mk-select v-model="lightTheme">
@@ -43,7 +42,10 @@
 				<option v-for="x in lightThemes" :value="x.id" :key="x.id">{{ x.name }}</option>
 			</optgroup>
 		</mk-select>
-		<a href="https://assets.msky.cafe/theme/list" rel="noopener" target="_blank" class="_link">{{ $t('_theme.explore') }}</a>・<router-link to="/theme-editor" class="_link">{{ $t('_theme.make') }}</router-link>
+		<a href="https://assets.msky.cafe/theme/list" rel="noopener" target="_blank" class="_link">{{ $t('_theme.explore') }}</a>
+	</div>
+	<div class="_content">
+		<mk-switch v-model="syncDeviceDarkMode">{{ $t('syncDeviceDarkMode') }}</mk-switch>
 	</div>
 	<div class="_content">
 		<mk-button primary v-if="wallpaper == null" @click="setWallpaper">{{ $t('setWallpaper') }}</mk-button>
@@ -55,8 +57,7 @@
 			<mk-textarea v-model="installThemeCode">
 				<span>{{ $t('_theme.code') }}</span>
 			</mk-textarea>
-			<mk-button @click="() => install(installThemeCode)" :disabled="installThemeCode == null" primary inline><fa :icon="faCheck"/> {{ $t('install') }}</mk-button>
-			<mk-button @click="() => preview(installThemeCode)" :disabled="installThemeCode == null" inline><fa :icon="faEye"/> {{ $t('preview') }}</mk-button>
+			<mk-button @click="() => install(this.installThemeCode)" :disabled="installThemeCode == null"><fa :icon="faCheck"/> {{ $t('install') }}</mk-button>
 		</details>
 	</div>
 	<div class="_content">
@@ -68,7 +69,6 @@
 			<template v-if="selectedTheme">
 				<mk-textarea readonly tall :value="selectedThemeCode">
 					<span>{{ $t('_theme.code') }}</span>
-					<template #desc><button @click="copyThemeCode()" class="_textButton">{{ $t('copy') }}</button></template>
 				</mk-textarea>
 				<mk-button @click="uninstall()" v-if="!builtinThemes.some(t => t.id == selectedTheme.id)"><fa :icon="faTrashAlt"/> {{ $t('uninstall') }}</mk-button>
 			</template>
@@ -79,19 +79,23 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import * as JSON5 from 'json5';
+import MkInput from '../../components/ui/input.vue';
 import MkButton from '../../components/ui/button.vue';
 import MkSelect from '../../components/ui/select.vue';
 import MkSwitch from '../../components/ui/switch.vue';
 import MkTextarea from '../../components/ui/textarea.vue';
-import { Theme, builtinThemes, applyTheme, validateTheme } from '../../scripts/theme';
+import i18n from '../../i18n';
+import { Theme, builtinThemes, applyTheme, validateTheme } from '../../theme';
 import { selectFile } from '../../scripts/select-file';
 import { isDeviceDarkmode } from '../../scripts/is-device-darkmode';
-import copyToClipboard from '../../scripts/copy-to-clipboard';
 
 export default Vue.extend({
+	i18n,
+
 	components: {
+		MkInput,
 		MkButton,
 		MkSelect,
 		MkSwitch,
@@ -104,7 +108,7 @@ export default Vue.extend({
 			installThemeCode: null,
 			selectedThemeId: null,
 			wallpaper: localStorage.getItem('wallpaper'),
-			faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt, faEye
+			faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt
 		}
 	},
 
@@ -192,17 +196,8 @@ export default Vue.extend({
 			});
 		},
 
-		copyThemeCode() {
-			copyToClipboard(this.selectedThemeCode);
-			this.$root.dialog({
-				type: 'success',
-				iconOnly: true, autoClose: true
-			});
-		},
-
-		parseThemeCode(code) {
+		install(code) {
 			let theme;
-
 			try {
 				theme = JSON5.parse(code);
 			} catch (e) {
@@ -210,34 +205,22 @@ export default Vue.extend({
 					type: 'error',
 					text: this.$t('_theme.invalid')
 				});
-				return false;
+				return;
 			}
 			if (!validateTheme(theme)) {
 				this.$root.dialog({
 					type: 'error',
 					text: this.$t('_theme.invalid')
 				});
-				return false;
+				return;
 			}
 			if (this.$store.state.device.themes.some(t => t.id === theme.id)) {
 				this.$root.dialog({
 					type: 'info',
 					text: this.$t('_theme.alreadyInstalled')
 				});
-				return false;
+				return;
 			}
-
-			return theme;
-		},
-
-		preview(code) {
-			const theme = this.parseThemeCode(code);
-			if (theme) applyTheme(theme, false);
-		},
-
-		install(code) {
-			const theme = this.parseThemeCode(code);
-			if (!theme) return;
 			const themes = this.$store.state.device.themes.concat(theme);
 			this.$store.commit('device/set', {
 				key: 'themes', value: themes
@@ -255,7 +238,7 @@ export default Vue.extend({
 				key: 'themes', value: themes
 			});
 			this.$root.dialog({
-				type: 'success',
+				type: 'info',
 				iconOnly: true, autoClose: true
 			});
 		},

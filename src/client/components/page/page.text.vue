@@ -15,13 +15,13 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		hpml: {
+		script: {
 			required: true
 		}
 	},
 	data() {
 		return {
-			text: this.hpml.interpolate(this.value.text),
+			text: this.script.interpolate(this.value.text),
 		};
 	},
 	computed: {
@@ -38,9 +38,9 @@ export default Vue.extend({
 		}
 	},
 	watch: {
-		'hpml.vars': {
+		'script.vars': {
 			handler() {
-				this.text = this.hpml.interpolate(this.value.text);
+				this.text = this.script.interpolate(this.value.text);
 			},
 			deep: true
 		}

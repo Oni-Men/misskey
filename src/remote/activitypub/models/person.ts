@@ -3,19 +3,19 @@ import * as promiseLimit from 'promise-limit';
 import config from '../../../config';
 import Resolver from '../resolver';
 import { resolveImage } from './image';
-import { isCollectionOrOrderedCollection, isCollection, IPerson, getApId, getOneApHrefNullable, IObject, isPropertyValue, IApPropertyValue } from '../type';
-import { fromHtml } from '../../../mfm/from-html';
-import { htmlToMfm } from '../misc/html-to-mfm';
+import { isCollectionOrOrderedCollection, isCollection, IPerson, getApId } from '../type';
+import { fromHtml } from '../../../mfm/fromHtml';
 import { resolveNote, extractEmojis } from './note';
 import { registerOrFetchInstanceDoc } from '../../../services/register-or-fetch-instance-doc';
-import { extractApHashtags } from './tag';
+import { ITag, extractHashtags } from './tag';
+import { IIdentifier } from './identifier';
 import { apLogger } from '../logger';
 import { Note } from '../../../models/entities/note';
 import { updateUsertags } from '../../../services/update-hashtag';
 import { Users, UserNotePinings, Instances, DriveFiles, Followings, UserProfiles, UserPublickeys } from '../../../models';
 import { User, IRemoteUser } from '../../../models/entities/user';
 import { Emoji } from '../../../models/entities/emoji';
-import { UserNotePining } from '../../../models/entities/user-note-pining';
+import { UserNotePining } from '../../../models/entities/user-note-pinings';
 import { genId } from '../../../misc/gen-id';
 import { instanceChart, usersChart } from '../../../services/chart';
 import { UserPublickey } from '../../../models/entities/user-publickey';
@@ -26,7 +26,7 @@ import { validActor } from '../../../remote/activitypub/type';
 import { getConnection } from 'typeorm';
 import { ensure } from '../../../prelude/ensure';
 import { toArray } from '../../../prelude/array';
-import { fetchInstanceMetadata } from '../../../services/fetch-instance-metadata';
+import { fetchNodeinfo } from '../../../services/fetch-nodeinfo';
 
 const logger = apLogger;
 
@@ -134,11 +134,9 @@ export async function createPerson(uri: string, resolver?: Resolver): Promise<Us
 
 	const { fields } = analyzeAttachments(person.attachment || []);
 
-	const tags = extractApHashtags(person.tag).map(tag => tag.toLowerCase()).splice(0, 32);
+	const tags = extractHashtags(person.tag).map(tag => tag.toLowerCase()).splice(0, 32);
 
-	const isBot = object.type === 'Service';
-
-	const bday = person['vcard:bday']?.match(/^\d{4}-\d{2}-\d{2}/);
+	const isBot = object.type == 'Service';
 
 	// Create user
 	let user: IRemoteUser;
@@ -167,11 +165,9 @@ export async function createPerson(uri: string, resolver?: Resolver): Promise<Us
 
 			await transactionalEntityManager.save(new UserProfile({
 				userId: user.id,
-				description: person.summary ? htmlToMfm(person.summary, person.tag) : null,
-				url: getOneApHrefNullable(person.url),
+				description: person.summary ? fromHtml(person.summary) : null,
+				url: person.url,
 				fields,
-				birthday: bday ? bday[0] : null,
-				location: person['vcard:Address'] || null,
 				userHost: host
 			}));
 
@@ -184,27 +180,18 @@ export async function createPerson(uri: string, resolver?: Resolver): Promise<Us
 	} catch (e) {
 		// duplicate key error
 		if (isDuplicateKeyValueError(e)) {
-			// /users/@a => /users/:id のように入力がaliasなときにエラーになることがあるのを対応
-			const u = await Users.findOne({
-				uri: person.id
-			});
-
-			if (u) {
-				user = u as IRemoteUser;
-			} else {
-				throw new Error('already registered');
-			}
-		} else {
-			logger.error(e);
-			throw e;
+			throw new Error('already registered');
 		}
+
+		logger.error(e);
+		throw e;
 	}
 
 	// Register host
 	registerOrFetchInstanceDoc(host).then(i => {
 		Instances.increment({ id: i.id }, 'usersCount', 1);
 		instanceChart.newUser(i.host);
-		fetchInstanceMetadata(i);
+		fetchNodeinfo(i);
 	});
 
 	usersChart.update(user!, true);
@@ -226,24 +213,24 @@ export async function createPerson(uri: string, resolver?: Resolver): Promise<Us
 	const bannerId = banner ? banner.id : null;
 	const avatarUrl = avatar ? DriveFiles.getPublicUrl(avatar, true) : null;
 	const bannerUrl = banner ? DriveFiles.getPublicUrl(banner) : null;
-	const avatarBlurhash = avatar ? avatar.blurhash : null;
-	const bannerBlurhash = banner ? banner.blurhash : null;
+	const avatarColor = avatar && avatar.properties.avgColor ? avatar.properties.avgColor : null;
+	const bannerColor = banner && banner.properties.avgColor ? banner.properties.avgColor : null;
 
 	await Users.update(user!.id, {
 		avatarId,
 		bannerId,
 		avatarUrl,
 		bannerUrl,
-		avatarBlurhash,
-		bannerBlurhash
+		avatarColor,
+		bannerColor
 	});
 
 	user!.avatarId = avatarId;
 	user!.bannerId = bannerId;
 	user!.avatarUrl = avatarUrl;
 	user!.bannerUrl = bannerUrl;
-	user!.avatarBlurhash = avatarBlurhash;
-	user!.bannerBlurhash = bannerBlurhash;
+	user!.avatarColor = avatarColor;
+	user!.bannerColor = bannerColor;
 	//#endregion
 
 	//#region カスタム絵文字取得
@@ -321,9 +308,7 @@ export async function updatePerson(uri: string, resolver?: Resolver | null, hint
 
 	const { fields } = analyzeAttachments(person.attachment || []);
 
-	const tags = extractApHashtags(person.tag).map(tag => tag.toLowerCase()).splice(0, 32);
-
-	const bday = person['vcard:bday']?.match(/^\d{4}-\d{2}-\d{2}/);
+	const tags = extractHashtags(person.tag).map(tag => tag.toLowerCase()).splice(0, 32);
 
 	const updates = {
 		lastFetchedAt: new Date(),
@@ -333,7 +318,7 @@ export async function updatePerson(uri: string, resolver?: Resolver | null, hint
 		emojis: emojiNames,
 		name: person.name,
 		tags,
-		isBot: object.type === 'Service',
+		isBot: object.type == 'Service',
 		isCat: (person as any).isCat === true,
 		isLocked: !!person.manuallyApprovesFollowers,
 	} as Partial<User>;
@@ -341,13 +326,13 @@ export async function updatePerson(uri: string, resolver?: Resolver | null, hint
 	if (avatar) {
 		updates.avatarId = avatar.id;
 		updates.avatarUrl = DriveFiles.getPublicUrl(avatar, true);
-		updates.avatarBlurhash = avatar.blurhash;
+		updates.avatarColor = avatar.properties.avgColor ? avatar.properties.avgColor : null;
 	}
 
 	if (banner) {
 		updates.bannerId = banner.id;
 		updates.bannerUrl = DriveFiles.getPublicUrl(banner);
-		updates.bannerBlurhash = banner.blurhash;
+		updates.bannerColor = banner.properties.avgColor ? banner.properties.avgColor : null;
 	}
 
 	// Update user
@@ -359,11 +344,9 @@ export async function updatePerson(uri: string, resolver?: Resolver | null, hint
 	});
 
 	await UserProfiles.update({ userId: exist.id }, {
-		url: getOneApHrefNullable(person.url),
+		url: person.url,
 		fields,
-		description: person.summary ? htmlToMfm(person.summary, person.tag) : null,
-		birthday: bday ? bday[0] : null,
-		location: person['vcard:Address'] || null,
+		description: person.summary ? fromHtml(person.summary) : null,
 	});
 
 	// ハッシュタグ更新
@@ -401,6 +384,16 @@ export async function resolvePerson(uri: string, resolver?: Resolver): Promise<U
 	return await createPerson(uri, resolver);
 }
 
+const isPropertyValue = (x: {
+		type: string,
+		name?: string,
+		value?: string
+	}) =>
+		x &&
+		x.type === 'PropertyValue' &&
+		typeof x.name === 'string' &&
+		typeof x.value === 'string';
+
 const services: {
 		[x: string]: (id: string, username: string) => any
 	} = {
@@ -416,7 +409,7 @@ const $discord = (id: string, name: string) => {
 	return { id, username, discriminator };
 };
 
-function addService(target: { [x: string]: any }, source: IApPropertyValue) {
+function addService(target: { [x: string]: any }, source: IIdentifier) {
 	const service = services[source.name];
 
 	if (typeof source.value !== 'string')
@@ -428,7 +421,7 @@ function addService(target: { [x: string]: any }, source: IApPropertyValue) {
 		target[source.name.split(':')[2]] = service(id, username);
 }
 
-export function analyzeAttachments(attachments: IObject | IObject[] | undefined) {
+export function analyzeAttachments(attachments: ITag[]) {
 	const fields: {
 		name: string,
 		value: string
@@ -437,12 +430,12 @@ export function analyzeAttachments(attachments: IObject | IObject[] | undefined)
 
 	if (Array.isArray(attachments)) {
 		for (const attachment of attachments.filter(isPropertyValue)) {
-			if (isPropertyValue(attachment.identifier)) {
-				addService(services, attachment.identifier);
+			if (isPropertyValue(attachment.identifier!)) {
+				addService(services, attachment.identifier!);
 			} else {
 				fields.push({
-					name: attachment.name,
-					value: fromHtml(attachment.value)
+					name: attachment.name!,
+					value: fromHtml(attachment.value!)
 				});
 			}
 		}

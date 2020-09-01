@@ -42,7 +42,6 @@ export default Vue.extend({
 	},
 	methods: {
 		toggle() {
-			if (this.disabled) return;
 			this.$emit('change', this.value);
 		}
 	}
@@ -62,10 +61,7 @@ export default Vue.extend({
 
 	&.disabled {
 		opacity: 0.6;
-
-		&, * {
-			cursor: not-allowed !important;
-		}
+		cursor: not-allowed;
 	}
 
 	&.checked {

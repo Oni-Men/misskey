@@ -32,6 +32,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import i18n from '../i18n';
 import copyToClipboard from '../scripts/copy-to-clipboard';
 //import updateAvatar from '../api/update-avatar';
 //import updateBanner from '../api/update-banner';
@@ -39,25 +40,22 @@ import XFileThumbnail from './drive-file-thumbnail.vue';
 import { faDownload, faLink, faICursor, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
 export default Vue.extend({
-	components: {
-		XFileThumbnail
-	},
+	i18n,
 
 	props: {
 		file: {
 			type: Object,
 			required: true,
 		},
-		isSelected: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
 		selectMode: {
 			type: Boolean,
 			required: false,
 			default: false,
 		}
+	},
+
+	components: {
+		XFileThumbnail
 	},
 
 	data() {
@@ -67,9 +65,11 @@ export default Vue.extend({
 	},
 
 	computed: {
-		// TODO: parentへの参照を無くす
 		browser(): any {
 			return this.$parent;
+		},
+		isSelected(): boolean {
+			return this.browser.selectedFiles.some(f => f.id == this.file.id);
 		},
 		title(): string {
 			return `${this.file.name}\n${this.file.type} ${Vue.filter('bytes')(this.file.size)}`;
@@ -79,7 +79,7 @@ export default Vue.extend({
 	methods: {
 		onClick(ev) {
 			if (this.selectMode) {
-				this.$emit('chosen', this.file);
+				this.browser.chooseFile(this.file);
 			} else {
 				this.$root.menu({
 					items: [{
@@ -124,6 +124,17 @@ export default Vue.extend({
 		onDragend(e) {
 			this.isDragging = false;
 			this.browser.isDragSource = false;
+		},
+
+		onThumbnailLoaded() {
+			if (this.file.properties.avgColor) {
+				anime({
+					targets: this.$refs.thumbnail,
+					backgroundColor: 'transparent', // TODO fade
+					duration: 100,
+					easing: 'linear'
+				});
+			}
 		},
 
 		rename() {
@@ -321,6 +332,7 @@ export default Vue.extend({
 		width: 128px;
 		height: 128px;
 		margin: auto;
+		color: var(--driveFileIcon);
 	}
 
 	> .name {

@@ -1,7 +1,7 @@
 import $ from 'cafy';
 import define from '../define';
 import { Users } from '../../../models';
-import { generateMutedUserQueryForUsers } from '../common/generate-muted-user-query';
+import { generateMuteQueryForUsers } from '../common/generate-mute-query';
 
 export const meta = {
 	tags: ['users'],
@@ -87,7 +87,7 @@ export default define(meta, async (ps, me) => {
 		default: query.orderBy('user.id', 'ASC'); break;
 	}
 
-	if (me) generateMutedUserQueryForUsers(query, me);
+	if (me) generateMuteQueryForUsers(query, me);
 
 	query.take(ps.limit!);
 	query.skip(ps.offset);

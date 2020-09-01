@@ -10,7 +10,8 @@
 				<mfm class="text" v-if="message.text" ref="text" :text="message.text" :i="$store.state.i"/>
 				<div class="file" v-if="message.file">
 					<a :href="message.file.url" rel="noopener" target="_blank" :title="message.file.name">
-						<img v-if="message.file.type.split('/')[0] == 'image'" :src="message.file.url" :alt="message.file.name"/>
+						<img v-if="message.file.type.split('/')[0] == 'image'" :src="message.file.url" :alt="message.file.name"
+							:style="{ backgroundColor: message.file.properties.avgColor || 'transparent' }"/>
 						<p v-else>{{ message.file.name }}</p>
 					</a>
 				</div>
@@ -37,11 +38,13 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import i18n from '../../i18n';
 import { parse } from '../../../mfm/parse';
 import { unique } from '../../../prelude/array';
 import MkUrlPreview from '../../components/url-preview.vue';
 
 export default Vue.extend({
+	i18n,
 	components: {
 		MkUrlPreview
 	},
@@ -55,16 +58,16 @@ export default Vue.extend({
 	},
 	computed: {
 		isMe(): boolean {
-			return this.message.userId === this.$store.state.i.id;
+			return this.message.userId == this.$store.state.i.id;
 		},
 		urls(): string[] {
 			if (this.message.text) {
 				const ast = parse(this.message.text);
 				return unique(ast
-					.filter(t => ((t.node.type === 'url' || t.node.type === 'link') && t.node.props.url && !t.node.props.silent))
+					.filter(t => ((t.node.type == 'url' || t.node.type == 'link') && t.node.props.url && !t.node.props.silent))
 					.map(t => t.node.props.url));
 			} else {
-				return [];
+				return null;
 			}
 		}
 	},
@@ -211,7 +214,6 @@ export default Vue.extend({
 							width: 100%;
 							max-height: 512px;
 							object-fit: contain;
-							box-sizing: border-box;
 						}
 
 						> p {

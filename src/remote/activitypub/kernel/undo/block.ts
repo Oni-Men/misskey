@@ -1,20 +1,33 @@
+import config from '../../../../config';
 import { IBlock } from '../../type';
 import unblock from '../../../../services/blocking/delete';
+import { apLogger } from '../../logger';
 import { IRemoteUser } from '../../../../models/entities/user';
-import DbResolver from '../../db-resolver';
+import { Users } from '../../../../models';
 
-export default async (actor: IRemoteUser, activity: IBlock): Promise<string> => {
-	const dbResolver = new DbResolver();
-	const blockee = await dbResolver.getUserFromApId(activity.object);
+const logger = apLogger;
+
+export default async (actor: IRemoteUser, activity: IBlock): Promise<void> => {
+	const id = typeof activity.object == 'string' ? activity.object : activity.object.id;
+	if (id == null) throw new Error('missing id');
+
+	const uri = activity.id || activity;
+
+	logger.info(`UnBlock: ${uri}`);
+
+	if (!id.startsWith(config.url + '/')) {
+		return;
+	}
+
+	const blockee = await Users.findOne(id.split('/').pop());
 
 	if (blockee == null) {
-		return `skip: blockee not found`;
+		throw new Error('blockee not found');
 	}
 
 	if (blockee.host != null) {
-		return `skip: ブロック解除しようとしているユーザーはローカルユーザーではありません`;
+		throw new Error('ブロック解除しようとしているユーザーはローカルユーザーではありません');
 	}
 
-	await unblock(actor, blockee);
-	return `ok`;
+	unblock(actor, blockee);
 };

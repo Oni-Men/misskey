@@ -1,9 +1,15 @@
 <template>
-<span class="eiwwqkts" :class="{ cat }" :title="user | acct" v-if="disableLink" v-user-preview="disablePreview ? undefined : user.id" @click="onClick">
-	<img class="inner" :src="url"/>
+<span class="eiwwqkts" :class="{ cat }" :title="user | acct" v-if="disableLink && !disablePreview" v-user-preview="user.id" @click="onClick">
+	<span class="inner" :style="icon"></span>
 </span>
-<router-link class="eiwwqkts" :class="{ cat }" :to="user | userPage" :title="user | acct" :target="target" v-else v-user-preview="disablePreview ? undefined : user.id">
-	<img class="inner" :src="url"/>
+<span class="eiwwqkts" :class="{ cat }" :title="user | acct" v-else-if="disableLink && disablePreview" @click="onClick">
+	<span class="inner" :style="icon"></span>
+</span>
+<router-link class="eiwwqkts" :class="{ cat }" :to="user | userPage" :title="user | acct" :target="target" v-else-if="!disableLink && !disablePreview" v-user-preview="user.id">
+	<span class="inner" :style="icon"></span>
+</router-link>
+<router-link class="eiwwqkts" :class="{ cat }" :to="user | userPage" :title="user | acct" :target="target" v-else-if="!disableLink && disablePreview">
+	<span class="inner" :style="icon"></span>
 </router-link>
 </template>
 
@@ -39,25 +45,24 @@ export default Vue.extend({
 				? getStaticImageUrl(this.user.avatarUrl)
 				: this.user.avatarUrl;
 		},
+		icon(): any {
+			return {
+				backgroundColor: this.user.avatarColor,
+				backgroundImage: `url(${this.url})`,
+			};
+		}
 	},
 	watch: {
-		'user.avatarBlurhash'() {
-			this.$el.style.color = this.getBlurhashAvgColor(this.user.avatarBlurhash);
+		'user.avatarColor'() {
+			this.$el.style.color = this.user.avatarColor;
 		}
 	},
 	mounted() {
-		this.$el.style.color = this.getBlurhashAvgColor(this.user.avatarBlurhash);
+		if (this.user.avatarColor) {
+			this.$el.style.color = this.user.avatarColor;
+		}
 	},
 	methods: {
-		getBlurhashAvgColor(s) {
-			return typeof s == 'string'
-				? '#' + [...s.slice(2, 6)]
-						.map(x => '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~'.indexOf(x))
-						.reduce((a, c) => a * 83 + c, 0)
-						.toString(16)
-						.padStart(6, '0')
-				: undefined;
-		},
 		onClick(e) {
 			this.$emit('click', e);
 		}
@@ -97,17 +102,15 @@ export default Vue.extend({
 	}
 	
 	.inner {
-		position: absolute;
+		background-position: center center;
+		background-size: cover;
 		bottom: 0;
 		left: 0;
+		position: absolute;
 		right: 0;
 		top: 0;
 		border-radius: 100%;
 		z-index: 1;
-		overflow: hidden;
-		object-fit: cover;
-		width: 100%;
-		height: 100%;
 	}
 }
 </style>

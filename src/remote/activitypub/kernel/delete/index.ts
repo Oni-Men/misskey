@@ -1,48 +1,26 @@
+import Resolver from '../../resolver';
 import deleteNote from './note';
 import { IRemoteUser } from '../../../../models/entities/user';
-import { IDelete, getApId, isTombstone, IObject, validPost, validActor } from '../../type';
-import { toSingle } from '../../../../prelude/array';
+import { IDelete, getApId, validPost } from '../../type';
+import { apLogger } from '../../logger';
 
 /**
  * 削除アクティビティを捌きます
  */
-export default async (actor: IRemoteUser, activity: IDelete): Promise<string> => {
+export default async (actor: IRemoteUser, activity: IDelete): Promise<void> => {
 	if ('actor' in activity && actor.uri !== activity.actor) {
 		throw new Error('invalid actor');
 	}
 
-	// 削除対象objectのtype
-	let formarType: string | undefined;
+	const resolver = new Resolver();
 
-	if (typeof activity.object === 'string') {
-		// typeが不明だけど、どうせ消えてるのでremote resolveしない
-		formarType = undefined;
+	const object = await resolver.resolve(activity.object);
+
+	const uri = getApId(object);
+
+	if (validPost.includes(object.type) || object.type === 'Tombstone') {
+		deleteNote(actor, uri);
 	} else {
-		const object = activity.object as IObject;
-		if (isTombstone(object)) {
-			formarType = toSingle(object.formerType);
-		} else {
-			formarType = toSingle(object.type);
-		}
-	}
-
-	const uri = getApId(activity.object);
-
-	// type不明でもactorとobjectが同じならばそれはPersonに違いない
-	if (!formarType && actor.uri === uri) {
-		formarType = 'Person';
-	}
-
-	// それでもなかったらおそらくNote
-	if (!formarType) {
-		formarType = 'Note';
-	}
-
-	if (validPost.includes(formarType)) {
-		return await deleteNote(actor, uri);
-	} else if (validActor.includes(formarType)) {
-		return `Delete Actor is not implanted`;
-	} else {
-		return `Unknown type ${formarType}`;
+		apLogger.warn(`Unknown type: ${object.type}`);
 	}
 };

@@ -4,7 +4,7 @@ import { registerOrFetchInstanceDoc } from '../../services/register-or-fetch-ins
 import Logger from '../../services/logger';
 import { Instances } from '../../models';
 import { instanceChart } from '../../services/chart';
-import { fetchInstanceMetadata } from '../../services/fetch-instance-metadata';
+import { fetchNodeinfo } from '../../services/fetch-nodeinfo';
 import { fetchMeta } from '../../misc/fetch-meta';
 import { toPuny } from '../../misc/convert-host';
 
@@ -48,7 +48,7 @@ export default async (job: Bull.Job) => {
 				isNotResponding: false
 			});
 
-			fetchInstanceMetadata(i);
+			fetchNodeinfo(i);
 
 			instanceChart.requestSent(i.host, true);
 		});

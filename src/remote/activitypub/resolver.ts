@@ -1,8 +1,10 @@
-import { getJson } from '../../misc/fetch';
+import * as request from 'request-promise-native';
 import { IObject, isCollectionOrOrderedCollection, ICollection, IOrderedCollection } from './type';
+import config from '../../config';
 
 export default class Resolver {
 	private history: Set<string>;
+	private timeout = 10 * 1000;
 
 	constructor() {
 		this.history = new Set();
@@ -39,7 +41,24 @@ export default class Resolver {
 
 		this.history.add(value);
 
-		const object = await getJson(value, 'application/activity+json, application/ld+json');
+		const object = await request({
+			url: value,
+			proxy: config.proxy,
+			timeout: this.timeout,
+			forever: true,
+			headers: {
+				'User-Agent': config.userAgent,
+				Accept: 'application/activity+json, application/ld+json'
+			},
+			json: true
+		}).catch(e => {
+			const message = `${e.name}: ${e.message ? e.message.substr(0, 200) : undefined}, url=${value}`;
+			throw {
+				name: e.name,
+				statusCode: e.statusCode,
+				message,
+			};
+		});
 
 		if (object == null || (
 			Array.isArray(object['@context']) ?

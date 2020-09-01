@@ -82,6 +82,7 @@ export default async (ctx: Router.RouterContext) => {
 		);
 
 		ctx.body = renderActivity(rendered);
+		ctx.set('Cache-Control', 'private, max-age=0, must-revalidate');
 		setResponseType(ctx);
 	} else {
 		// index page
@@ -90,7 +91,7 @@ export default async (ctx: Router.RouterContext) => {
 			`${partOf}?page=true&since_id=000000000000000000000000`
 		);
 		ctx.body = renderActivity(rendered);
-		ctx.set('Cache-Control', 'public, max-age=180');
+		ctx.set('Cache-Control', 'private, max-age=0, must-revalidate');
 		setResponseType(ctx);
 	}
 };
@@ -100,7 +101,7 @@ export default async (ctx: Router.RouterContext) => {
  * @param note Note
  */
 export async function packActivity(note: Note): Promise<any> {
-	if (note.renoteId && note.text == null && !note.hasPoll && (note.fileIds == null || note.fileIds.length === 0)) {
+	if (note.renoteId && note.text == null && !note.hasPoll && (note.fileIds == null || note.fileIds.length == 0)) {
 		const renote = await Notes.findOne(note.renoteId).then(ensure);
 		return renderAnnounce(renote.uri ? renote.uri : `${config.url}/notes/${renote.id}`, note);
 	}

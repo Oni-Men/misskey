@@ -13,8 +13,6 @@ services:
     networks:
       - internal_network
       - external_network
-    volumes:
-      - ./files:/misskey/files
 
   redis:
     restart: always
@@ -26,7 +24,7 @@ services:
 
   db:
     restart: always
-    image: postgres:12.2-alpine
+    image: postgres:11.2-alpine
     networks:
       - internal_network
     env_file:

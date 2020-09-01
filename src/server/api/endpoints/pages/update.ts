@@ -51,10 +51,6 @@ export const meta = {
 			validator: $.arr($.obj())
 		},
 
-		script: {
-			validator: $.str,
-		},
-
 		eyeCatchingImageId: {
 			validator: $.optional.nullable.type(ID),
 		},
@@ -136,7 +132,6 @@ export default define(meta, async (ps, user) => {
 		summary: ps.name === undefined ? page.summary : ps.summary,
 		content: ps.content,
 		variables: ps.variables,
-		script: ps.script,
 		alignCenter: ps.alignCenter === undefined ? page.alignCenter : ps.alignCenter,
 		hideTitleWhenPinned: ps.hideTitleWhenPinned === undefined ? page.hideTitleWhenPinned : ps.hideTitleWhenPinned,
 		font: ps.font === undefined ? page.font : ps.font,

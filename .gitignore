@@ -12,7 +12,7 @@ report.*.json
 # config
 /.config/*
 !/.config/example.yml
-!/.config/docker_example.env
+!/.config/mongo_initdb_example.js
 
 # misskey
 /build

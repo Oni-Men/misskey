@@ -2,7 +2,7 @@ import renderImage from './image';
 import renderKey from './key';
 import config from '../../../config';
 import { ILocalUser } from '../../../models/entities/user';
-import { toHtml } from '../../../mfm/to-html';
+import { toHtml } from '../../../mfm/toHtml';
 import { parse } from '../../../mfm/parse';
 import { getEmojis } from './note';
 import renderEmoji from './emoji';
@@ -13,7 +13,6 @@ import { ensure } from '../../../prelude/ensure';
 
 export async function renderPerson(user: ILocalUser) {
 	const id = `${config.url}/users/${user.id}`;
-	const isSystem = !!user.username.match(/\./);
 
 	const [avatar, banner, profile] = await Promise.all([
 		user.avatarId ? DriveFiles.findOne(user.avatarId) : Promise.resolve(undefined),
@@ -52,8 +51,8 @@ export async function renderPerson(user: ILocalUser) {
 
 	const keypair = await UserKeypairs.findOne(user.id).then(ensure);
 
-	const person = {
-		type: isSystem ? 'Application' : user.isBot ? 'Service' : 'Person',
+	return {
+		type: user.isBot ? 'Service' : 'Person',
 		id,
 		inbox: `${id}/inbox`,
 		outbox: `${id}/outbox`,
@@ -73,15 +72,5 @@ export async function renderPerson(user: ILocalUser) {
 		publicKey: renderKey(user, keypair, `#main-key`),
 		isCat: user.isCat,
 		attachment: attachment.length ? attachment : undefined
-	} as any;
-
-	if (profile?.birthday) {
-		person['vcard:bday'] = profile.birthday;
-	}
-
-	if (profile?.location) {
-		person['vcard:Address'] = profile.location;
-	}
-
-	return person;
+	};
 }

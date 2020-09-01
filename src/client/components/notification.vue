@@ -1,25 +1,22 @@
 <template>
-<div class="qglefbjs" :class="notification.type" v-size="{ max: [500, 600] }">
+<div class="mk-notification" :class="notification.type" v-size="[{ max: 500 }, { max: 600 }]">
 	<div class="head">
-		<mk-avatar v-if="notification.user" class="icon" :user="notification.user"/>
-		<img v-else class="icon" :src="notification.icon" alt=""/>
-		<div class="sub-icon" :class="notification.type">
+		<mk-avatar class="avatar" :user="notification.user"/>
+		<div class="icon" :class="notification.type">
 			<fa :icon="faPlus" v-if="notification.type === 'follow'"/>
-			<fa :icon="faClock" v-else-if="notification.type === 'receiveFollowRequest'"/>
-			<fa :icon="faCheck" v-else-if="notification.type === 'followRequestAccepted'"/>
-			<fa :icon="faIdCardAlt" v-else-if="notification.type === 'groupInvited'"/>
-			<fa :icon="faRetweet" v-else-if="notification.type === 'renote'"/>
-			<fa :icon="faReply" v-else-if="notification.type === 'reply'"/>
-			<fa :icon="faAt" v-else-if="notification.type === 'mention'"/>
-			<fa :icon="faQuoteLeft" v-else-if="notification.type === 'quote'"/>
-			<fa :icon="faPollH" v-else-if="notification.type === 'pollVote'"/>
-			<x-reaction-icon v-else-if="notification.type === 'reaction'" :reaction="notification.reaction" :custom-emojis="notification.note.emojis" :no-style="true"/>
+			<fa :icon="faClock" v-if="notification.type === 'receiveFollowRequest'"/>
+			<fa :icon="faCheck" v-if="notification.type === 'followRequestAccepted'"/>
+			<fa :icon="faIdCardAlt" v-if="notification.type === 'groupInvited'"/>
+			<fa :icon="faRetweet" v-if="notification.type === 'renote'"/>
+			<fa :icon="faReply" v-if="notification.type === 'reply'"/>
+			<fa :icon="faAt" v-if="notification.type === 'mention'"/>
+			<fa :icon="faQuoteLeft" v-if="notification.type === 'quote'"/>
+			<x-reaction-icon v-if="notification.type === 'reaction'" :reaction="notification.reaction" :no-style="true"/>
 		</div>
 	</div>
 	<div class="tail">
 		<header>
-			<router-link v-if="notification.user" class="name" :to="notification.user | userPage" v-user-preview="notification.user.id"><mk-user-name :user="notification.user"/></router-link>
-			<span v-else>{{ notification.header }}</span>
+			<router-link class="name" :to="notification.user | userPage" v-user-preview="notification.user.id"><mk-user-name :user="notification.user"/></router-link>
 			<mk-time :time="notification.createdAt" v-if="withTime"/>
 		</header>
 		<router-link v-if="notification.type === 'reaction'" class="text" :to="notification.note | notePage" :title="getNoteSummary(notification.note)">
@@ -41,31 +38,25 @@
 		<router-link v-if="notification.type === 'quote'" class="text" :to="notification.note | notePage" :title="getNoteSummary(notification.note)">
 			<mfm :text="getNoteSummary(notification.note)" :plain="true" :nowrap="!full" :custom-emojis="notification.note.emojis"/>
 		</router-link>
-		<router-link v-if="notification.type === 'pollVote'" class="text" :to="notification.note | notePage" :title="getNoteSummary(notification.note)">
-			<fa :icon="faQuoteLeft"/>
-			<mfm :text="getNoteSummary(notification.note)" :plain="true" :nowrap="!full" :custom-emojis="notification.note.emojis"/>
-			<fa :icon="faQuoteRight"/>
-		</router-link>
 		<span v-if="notification.type === 'follow'" class="text" style="opacity: 0.6;">{{ $t('youGotNewFollower') }}<div v-if="full"><mk-follow-button :user="notification.user" :full="true"/></div></span>
 		<span v-if="notification.type === 'followRequestAccepted'" class="text" style="opacity: 0.6;">{{ $t('followRequestAccepted') }}</span>
 		<span v-if="notification.type === 'receiveFollowRequest'" class="text" style="opacity: 0.6;">{{ $t('receiveFollowRequest') }}<div v-if="full && !followRequestDone"><button class="_textButton" @click="acceptFollowRequest()">{{ $t('accept') }}</button> | <button class="_textButton" @click="rejectFollowRequest()">{{ $t('reject') }}</button></div></span>
 		<span v-if="notification.type === 'groupInvited'" class="text" style="opacity: 0.6;">{{ $t('groupInvited') }}: <b>{{ notification.invitation.group.name }}</b><div v-if="full && !groupInviteDone"><button class="_textButton" @click="acceptGroupInvitation()">{{ $t('accept') }}</button> | <button class="_textButton" @click="rejectGroupInvitation()">{{ $t('reject') }}</button></div></span>
-		<span v-if="notification.type === 'app'" class="text">
-			<mfm :text="notification.body" :nowrap="!full"/>
-		</span>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-import { faIdCardAlt, faPlus, faQuoteLeft, faQuoteRight, faRetweet, faReply, faAt, faCheck, faPollH } from '@fortawesome/free-solid-svg-icons';
+import { faIdCardAlt, faPlus, faQuoteLeft, faQuoteRight, faRetweet, faReply, faAt, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { faClock } from '@fortawesome/free-regular-svg-icons';
-import noteSummary from '../../misc/get-note-summary';
+import getNoteSummary from '../../misc/get-note-summary';
 import XReactionIcon from './reaction-icon.vue';
 import MkFollowButton from './follow-button.vue';
+import i18n from '../i18n';
 
 export default Vue.extend({
+	i18n,
 	components: {
 		XReactionIcon, MkFollowButton
 	},
@@ -87,39 +78,12 @@ export default Vue.extend({
 	},
 	data() {
 		return {
-			getNoteSummary: (text: string) => noteSummary(text, this.$root.i18n.messages[this.$root.i18n.locale]),
+			getNoteSummary,
 			followRequestDone: false,
 			groupInviteDone: false,
-			connection: null,
-			readObserver: null,
-			faIdCardAlt, faPlus, faQuoteLeft, faQuoteRight, faRetweet, faReply, faAt, faClock, faCheck, faPollH
+			faIdCardAlt, faPlus, faQuoteLeft, faQuoteRight, faRetweet, faReply, faAt, faClock, faCheck
 		};
 	},
-
-	mounted() {
-		if (!this.notification.isRead) {
-			this.readObserver = new IntersectionObserver((entries, observer) => {
-				if (!entries.some(entry => entry.isIntersecting)) return;
-				this.$root.stream.send('readNotification', {
-					id: this.notification.id
-				});
-				entries.map(({ target }) => observer.unobserve(target));
-			});
-
-			this.readObserver.observe(this.$el);
-
-			this.connection = this.$root.stream.useSharedConnection('main');
-			this.connection.on('readAllNotifications', () => this.readObserver.unobserve(this.$el));
-		}
-	},
-
-	beforeDestroy() {
-		if (!this.notification.isRead) {
-			this.readObserver.unobserve(this.$el);
-			this.connection.dispose();
-		}
-	},
-
 	methods: {
 		acceptFollowRequest() {
 			this.followRequestDone = true;
@@ -146,7 +110,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-.qglefbjs {
+.mk-notification {
 	position: relative;
 	box-sizing: border-box;
 	padding: 24px 32px;
@@ -178,14 +142,14 @@ export default Vue.extend({
 		height: 42px;
 		margin-right: 8px;
 
-		> .icon {
+		> .avatar {
 			display: block;
 			width: 100%;
 			height: 100%;
 			border-radius: 6px;
 		}
 
-		> .sub-icon {
+		> .icon {
 			position: absolute;
 			z-index: 1;
 			bottom: -2px;
@@ -198,10 +162,6 @@ export default Vue.extend({
 			box-shadow: 0 0 0 3px var(--panel);
 			font-size: 12px;
 			pointer-events: none;
-
-			&:empty {
-				display: none;
-			}
 
 			> * {
 				color: #fff;
@@ -230,11 +190,6 @@ export default Vue.extend({
 			}
 
 			&.mention {
-				padding: 3px;
-				background: #88a6b7;
-			}
-
-			&.pollVote {
 				padding: 3px;
 				background: #88a6b7;
 			}

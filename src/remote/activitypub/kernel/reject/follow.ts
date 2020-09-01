@@ -1,29 +1,26 @@
 import { IRemoteUser } from '../../../../models/entities/user';
+import config from '../../../../config';
 import reject from '../../../../services/following/requests/reject';
 import { IFollow } from '../../type';
-import DbResolver from '../../db-resolver';
-import { relayRejected } from '../../../../services/relay';
+import { Users } from '../../../../models';
 
-export default async (actor: IRemoteUser, activity: IFollow): Promise<string> => {
-	// ※ activityはこっちから投げたフォローリクエストなので、activity.actorは存在するローカルユーザーである必要がある
+export default async (actor: IRemoteUser, activity: IFollow): Promise<void> => {
+	const id = typeof activity.actor == 'string' ? activity.actor : activity.actor.id;
+	if (id == null) throw new Error('missing id');
 
-	const dbResolver = new DbResolver();
-	const follower = await dbResolver.getUserFromApId(activity.actor);
+	if (!id.startsWith(config.url + '/')) {
+		return;
+	}
+
+	const follower = await Users.findOne(id.split('/').pop());
 
 	if (follower == null) {
-		return `skip: follower not found`;
+		throw new Error('follower not found');
 	}
 
 	if (follower.host != null) {
-		return `skip: follower is not a local user`;
-	}
-
-	// relay
-	const match = activity.id?.match(/follow-relay\/(\w+)/);
-	if (match) {
-		return await relayRejected(match[1]);
+		throw new Error('フォローリクエストしたユーザーはローカルユーザーではありません');
 	}
 
 	await reject(actor, follower);
-	return `ok`;
 };

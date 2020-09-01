@@ -6,9 +6,11 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as http2 from 'http2';
 import * as https from 'https';
+import * as zlib from 'zlib';
 import * as Koa from 'koa';
 import * as Router from '@koa/router';
 import * as mount from 'koa-mount';
+import * as compress from 'koa-compress';
 import * as koaLogger from 'koa-logger';
 import * as requestStats from 'request-stats';
 import * as slow from 'koa-slow';
@@ -45,6 +47,11 @@ if (!['production', 'test'].includes(process.env.NODE_ENV || '')) {
 		}));
 	}
 }
+
+// Compress response
+app.use(compress({
+	flush: zlib.constants.Z_SYNC_FLUSH
+}));
 
 // HSTS
 // 6months (15552000sec)
@@ -143,7 +150,7 @@ export default () => new Promise(resolve => {
 
 	// Bulk write
 	setInterval(() => {
-		if (queue.length === 0) return;
+		if (queue.length == 0) return;
 
 		const requests = queue.length;
 		const time = sum(queue.map(x => x.time));

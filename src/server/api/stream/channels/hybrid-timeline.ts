@@ -1,11 +1,10 @@
 import autobind from 'autobind-decorator';
-import { isMutedUserRelated } from '../../../../misc/is-muted-user-related';
+import shouldMuteThisNote from '../../../../misc/should-mute-this-note';
 import Channel from '../channel';
 import { fetchMeta } from '../../../../misc/fetch-meta';
 import { Notes } from '../../../../models';
 import { PackedNote } from '../../../../models/repositories/note';
 import { PackedUser } from '../../../../models/repositories/user';
-import { checkWordMute } from '../../../../misc/check-word-mute';
 
 export default class extends Channel {
 	public readonly chName = 'hybridTimeline';
@@ -23,15 +22,11 @@ export default class extends Channel {
 
 	@autobind
 	private async onNote(note: PackedNote) {
-		// チャンネルの投稿ではなく、自分自身の投稿 または
-		// チャンネルの投稿ではなく、その投稿のユーザーをフォローしている または
-		// チャンネルの投稿ではなく、全体公開のローカルの投稿 または
-		// フォローしているチャンネルの投稿 の場合だけ
+		// 自分自身の投稿 または その投稿のユーザーをフォローしている または 全体公開のローカルの投稿 の場合だけ
 		if (!(
-			(note.channelId == null && this.user!.id === note.userId) ||
-			(note.channelId == null && this.following.includes(note.userId)) ||
-			(note.channelId == null && ((note.user as PackedUser).host == null && note.visibility === 'public')) ||
-			(note.channelId != null && this.followingChannels.includes(note.channelId))
+			this.user!.id === note.userId ||
+			this.following.includes(note.userId) ||
+			((note.user as PackedUser).host == null && note.visibility === 'public')
 		)) return;
 
 		if (['followers', 'specified'].includes(note.visibility)) {
@@ -64,14 +59,7 @@ export default class extends Channel {
 		}
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
-		if (isMutedUserRelated(note, this.muting)) return;
-
-		// 流れてきたNoteがミュートすべきNoteだったら無視する
-		// TODO: 将来的には、単にMutedNoteテーブルにレコードがあるかどうかで判定したい(以下の理由により難しそうではある)
-		// 現状では、ワードミュートにおけるMutedNoteレコードの追加処理はストリーミングに流す処理と並列で行われるため、
-		// レコードが追加されるNoteでも追加されるより先にここのストリーミングの処理に到達することが起こる。
-		// そのためレコードが存在するかのチェックでは不十分なので、改めてcheckWordMuteを呼んでいる
-		if (this.userProfile && await checkWordMute(note, this.user, this.userProfile.mutedWords)) return;
+		if (shouldMuteThisNote(note, this.muting)) return;
 
 		this.send('note', note);
 	}
