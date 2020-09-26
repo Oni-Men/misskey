@@ -22,7 +22,7 @@ export default class Resolver {
 		if (isCollectionOrOrderedCollection(collection)) {
 			return collection;
 		} else {
-			throw new Error(`unknown collection type: ${collection.type}`);
+			throw new Error(`unrecognized collection type: ${collection.type}`);
 		}
 	}
 

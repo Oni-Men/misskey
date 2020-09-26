@@ -63,6 +63,6 @@ async function performOneActivity(actor: IRemoteUser, activity: IObject): Promis
 	} else if (isBlock(activity)) {
 		await block(actor, activity);
 	} else {
-		apLogger.warn(`unknown activity type: ${(activity as any).type}`);
+		apLogger.warn(`unrecognized activity type: ${(activity as any).type}`);
 	}
 }
