@@ -1,38 +1,44 @@
 <template>
-<div class="xcukqgmh _panel">
-	<portal to="avatar" v-if="page"><mk-avatar class="avatar" :user="page.user" :disable-preview="true"/></portal>
-	<portal to="title" v-if="page">{{ page.title || page.name }}</portal>
-
-	<div class="_card" v-if="page" :key="page.id">
-		<div class="_title">{{ page.title }}</div>
+<div class="xcukqgmh" v-if="page" :key="page.id">
+	<div class="_section main">
 		<div class="_content">
-			<x-page :page="page"/>
-		</div>
-		<div class="_footer">
-			<small>@{{ page.user.username }}</small>
-			<template v-if="$store.getters.isSignedIn && $store.state.i.id === page.userId">
-				<router-link :to="`/my/pages/edit/${page.id}`">{{ $t('_pages.editThisPage') }}</router-link>
-				<a v-if="$store.state.i.pinnedPageId === page.id" @click="pin(false)">{{ $t('unpin') }}</a>
-				<a v-else @click="pin(true)">{{ $t('pin') }}</a>
-			</template>
-			<router-link :to="`./${page.name}/view-source`">{{ $t('_pages.viewSource') }}</router-link>
-			<div class="like">
-				<button class="_button" @click="unlike()" v-if="page.isLiked" :title="$t('_pages.unlike')"><fa :icon="faHeartS"/></button>
-				<button class="_button" @click="like()" v-else :title="$t('_pages.like')"><fa :icon="faHeartR"/></button>
-				<span class="count" v-if="page.likedCount > 0">{{ page.likedCount }}</span>
+			<div class="banner">
+				<img :src="page.eyeCatchingImage.url" v-if="page.eyeCatchingImageId"/>
 			</div>
+			<div>
+				<XPage :page="page"/>
+				<small style="display: block; opacity: 0.7; margin-top: 1em;">@{{ page.user.username }}</small>
+			</div>
+		</div>
+	</div>
+	<div class="_section like">
+		<div class="_content">
+			<button class="_button" @click="unlike()" v-if="page.isLiked" :title="$ts._pages.unlike"><Fa :icon="faHeartS"/></button>
+			<button class="_button" @click="like()" v-else :title="$ts._pages.like"><Fa :icon="faHeartR"/></button>
+			<span class="count" v-if="page.likedCount > 0">{{ page.likedCount }}</span>
+		</div>
+	</div>
+	<div class="_section links">
+		<div class="_content">
+			<MkA :to="`./${page.name}/view-source`" class="link">{{ $ts._pages.viewSource }}</MkA>
+			<template v-if="$i && $i.id === page.userId">
+				<MkA :to="`/pages/edit/${page.id}`" class="link">{{ $ts._pages.editThisPage }}</MkA>
+				<button v-if="$i.pinnedPageId === page.id" @click="pin(false)" class="link _textButton">{{ $ts.unpin }}</button>
+				<button v-else @click="pin(true)" class="link _textButton">{{ $ts.pin }}</button>
+			</template>
 		</div>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { computed, defineComponent } from 'vue';
 import { faHeart as faHeartS } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartR } from '@fortawesome/free-regular-svg-icons';
-import XPage from '../components/page/page.vue';
+import XPage from '@/components/page/page.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
+export default defineComponent({
 	components: {
 		XPage
 	},
@@ -50,6 +56,10 @@ export default Vue.extend({
 
 	data() {
 		return {
+			INFO: computed(() => this.page ? {
+				title: computed(() => this.page.title || this.page.name),
+				avatar: this.page.user,
+			} : null),
 			page: null,
 			faHeartS, faHeartR
 		};
@@ -73,7 +83,7 @@ export default Vue.extend({
 
 	methods: {
 		fetch() {
-			this.$root.api('pages/show', {
+			os.api('pages/show', {
 				name: this.pageName,
 				username: this.username,
 			}).then(page => {
@@ -82,7 +92,7 @@ export default Vue.extend({
 		},
 
 		like() {
-			this.$root.api('pages/like', {
+			os.api('pages/like', {
 				pageId: this.page.id,
 			}).then(() => {
 				this.page.isLiked = true;
@@ -91,7 +101,7 @@ export default Vue.extend({
 		},
 
 		unlike() {
-			this.$root.api('pages/unlike', {
+			os.api('pages/unlike', {
 				pageId: this.page.id,
 			}).then(() => {
 				this.page.isLiked = false;
@@ -100,13 +110,8 @@ export default Vue.extend({
 		},
 
 		pin(pin) {
-			this.$root.api('i/update', {
+			os.apiWithDialog('i/update', {
 				pinnedPageId: pin ? this.page.id : null,
-			}).then(() => {
-				this.$root.dialog({
-					type: 'success',
-					iconOnly: true, autoClose: true
-				});
 			});
 		}
 	}
@@ -115,6 +120,25 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .xcukqgmh {
+	> .main {
+		> ._content {
+			> .banner {
+				> img {
+					display: block;
+					width: 100%;
+					height: 120px;
+					object-fit: cover;
+				}
+			}
+		}
+	}
 
+	> .links {
+		> ._content {
+			> .link {
+				margin-right: 0.75em;
+			}
+		}
+	}
 }
 </style>

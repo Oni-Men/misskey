@@ -1,55 +1,72 @@
 <template>
-<div class="mk-note-page">
-	<portal to="avatar" v-if="note"><mk-avatar class="avatar" :user="note.user" :disable-preview="true"/></portal>
-	<portal to="title" v-if="note">
-		<mfm 
-			:text="$t('noteOf', { user: note.user.name || note.user.username })"
-			:plain="true" :nowrap="true" :custom-emojis="note.user.emojis" :is-note="false"
-		/>
-	</portal>
-
-	<div v-if="note">
-		<button class="_panel _button" v-if="hasNext && !showNext" @click="showNext = true" style="margin: 0 auto var(--margin) auto;"><fa :icon="faChevronUp"/></button>
-		<x-notes v-if="showNext" ref="next" :pagination="next"/>
-		<hr v-if="showNext"/>
-
-		<mk-remote-caution v-if="note.user.host != null" :href="note.uri" style="margin-bottom: var(--margin)"/>
-		<x-note :note="note" :key="note.id" :detail="true"/>
-		<div v-if="error">
-			<mk-error @retry="fetch()"/>
+<div class="fcuexfpr">
+	<div v-if="note" class="note">
+		<div class="_section" v-if="showNext">
+			<XNotes class="_content _noGap_" :pagination="next"/>
 		</div>
 
-		<button class="_panel _button" v-if="hasPrev && !showPrev" @click="showPrev = true" style="margin: var(--margin) auto 0 auto;"><fa :icon="faChevronDown"/></button>
-		<hr v-if="showPrev"/>
-		<x-notes v-if="showPrev" ref="prev" :pagination="prev" style="margin-top: var(--margin);"/>
+		<div class="_section main">
+			<MkButton v-if="!showNext && hasNext" class="load next _content" @click="showNext = true"><Fa :icon="faChevronUp"/></MkButton>
+			<div class="_content _vMargin">
+				<MkRemoteCaution v-if="note.user.host != null" :href="note.url || note.uri" class="_vMargin"/>
+				<XNoteDetailed v-model:note="note" :key="note.id" class="_vMargin"/>
+			</div>
+			<div class="_content clips _vMargin" v-if="clips && clips.length > 0">
+				<div class="title">{{ $ts.clip }}</div>
+				<MkA v-for="item in clips" :key="item.id" :to="`/clips/${item.id}`" class="item _panel _vMargin">
+					<b>{{ item.name }}</b>
+					<div v-if="item.description" class="description">{{ item.description }}</div>
+					<div class="user">
+						<MkAvatar :user="item.user" class="avatar"/> <MkUserName :user="item.user" :nowrap="false"/>
+					</div>
+				</MkA>
+			</div>
+			<MkButton v-if="!showPrev && hasPrev" class="load prev _content" @click="showPrev = true"><Fa :icon="faChevronDown"/></MkButton>
+		</div>
+
+		<div class="_section" v-if="showPrev">
+			<XNotes class="_content _noGap_" :pagination="prev"/>
+		</div>
+	</div>
+
+	<div v-if="error">
+		<MkError @retry="fetch()"/>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { computed, defineComponent } from 'vue';
 import { faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import i18n from '../i18n';
-import Progress from '../scripts/loading';
-import XNote from '../components/note.vue';
-import XNotes from '../components/notes.vue';
-import MkRemoteCaution from '../components/remote-caution.vue';
+import XNote from '@/components/note.vue';
+import XNoteDetailed from '@/components/note-detailed.vue';
+import XNotes from '@/components/notes.vue';
+import MkRemoteCaution from '@/components/remote-caution.vue';
+import MkButton from '@/components/ui/button.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
-	i18n,
-	metaInfo() {
-		return {
-			title: this.$t('note') as string
-		};
-	},
+export default defineComponent({
 	components: {
 		XNote,
+		XNoteDetailed,
 		XNotes,
 		MkRemoteCaution,
+		MkButton,
+	},
+	props: {
+		noteId: {
+			type: String,
+			required: true
+		}
 	},
 	data() {
 		return {
+			INFO: computed(() => this.note ? {
+				title: this.$ts.note,
+				avatar: this.note.user,
+			} : null),
 			note: null,
+			clips: null,
 			hasPrev: false,
 			hasNext: false,
 			showPrev: false,
@@ -76,39 +93,89 @@ export default Vue.extend({
 		};
 	},
 	watch: {
-		$route: 'fetch'
+		noteId: 'fetch'
 	},
 	created() {
 		this.fetch();
 	},
 	methods: {
 		fetch() {
-			Progress.start();
-			this.$root.api('notes/show', {
-				noteId: this.$route.params.note
+			os.api('notes/show', {
+				noteId: this.noteId
 			}).then(note => {
 				Promise.all([
-					this.$root.api('users/notes', {
+					os.api('notes/clips', {
+						noteId: note.id,
+					}),
+					os.api('users/notes', {
 						userId: note.userId,
 						untilId: note.id,
 						limit: 1,
 					}),
-					this.$root.api('users/notes', {
+					os.api('users/notes', {
 						userId: note.userId,
 						sinceId: note.id,
 						limit: 1,
 					}),
-				]).then(([prev, next]) => {
+				]).then(([clips, prev, next]) => {
+					this.clips = clips;
 					this.hasPrev = prev.length !== 0;
 					this.hasNext = next.length !== 0;
 					this.note = note;
 				});
 			}).catch(e => {
 				this.error = e;
-			}).finally(() => {
-				Progress.done();
 			});
 		}
 	}
 });
 </script>
+
+<style lang="scss" scoped>
+.fcuexfpr {
+	> .note {
+		> .main {
+			> .load {
+				min-width: 0;
+				border-radius: 999px;
+
+				&.next {
+					margin-bottom: var(--margin);
+				}
+
+				&.prev {
+					margin-top: var(--margin);
+				}
+			}
+
+			> .clips {
+				> .title {
+					font-weight: bold;
+					padding: 12px;
+				}
+
+				> .item {
+					display: block;
+					padding: 16px;
+
+					> .description {
+						padding: 8px 0;
+					}
+
+					> .user {
+						$height: 32px;
+						padding-top: 16px;
+						border-top: solid 1px var(--divider);
+						line-height: $height;
+
+						> .avatar {
+							width: $height;
+							height: $height;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+</style>

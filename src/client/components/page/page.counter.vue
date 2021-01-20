@@ -1,14 +1,15 @@
 <template>
 <div>
-	<mk-button class="llumlmnx" @click="click()">{{ script.interpolate(value.text) }}</mk-button>
+	<MkButton class="llumlmnx" @click="click()">{{ hpml.interpolate(value.text) }}</MkButton>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import MkButton from '../ui/button.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
+export default defineComponent({
 	components: {
 		MkButton
 	},
@@ -16,7 +17,7 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		script: {
+		hpml: {
 			required: true
 		}
 	},
@@ -27,8 +28,8 @@ export default Vue.extend({
 	},
 	watch: {
 		v() {
-			this.script.aiScript.updatePageVar(this.value.name, this.v);
-			this.script.eval();
+			this.hpml.updatePageVar(this.value.name, this.v);
+			this.hpml.eval();
 		}
 	},
 	methods: {

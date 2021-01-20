@@ -6,28 +6,22 @@ export type Theme = {
 	author: string;
 	desc?: string;
 	base?: 'dark' | 'light';
-	props: { [key: string]: string };
+	props: Record<string, string>;
 };
 
-export const lightTheme: Theme = require('./themes/_light.json5');
-export const darkTheme: Theme = require('./themes/_dark.json5');
+export const lightTheme: Theme = require('../themes/_light.json5');
+export const darkTheme: Theme = require('../themes/_dark.json5');
+
+export const themeProps = Object.keys(lightTheme.props).filter(key => !key.startsWith('X'));
 
 export const builtinThemes = [
-	require('./themes/white.json5'),
-	require('./themes/black.json5'),
-	require('./themes/lavender.json5'),
-	require('./themes/halloween.json5'),
-	require('./themes/garden.json5'),
-	require('./themes/mauve.json5'),
-	require('./themes/elegant.json5'),
-	require('./themes/rainy.json5'),
-	require('./themes/urban.json5'),
-	require('./themes/cafe.json5'),
-	require('./themes/chocolate.json5'),
-	require('./themes/danboard.json5'),
-	require('./themes/olive.json5'),
-	require('./themes/tweetdeck.json5'),
-];
+	require('../themes/l-light.json5'),
+	require('../themes/l-apricot.json5'),
+
+	require('../themes/d-dark.json5'),
+	require('../themes/d-persimmon.json5'),
+	require('../themes/d-black.json5'),
+] as Theme[];
 
 let timeout = null;
 
@@ -66,16 +60,21 @@ export function applyTheme(theme: Theme, persist = true) {
 	}
 }
 
-function compile(theme: Theme): { [key: string]: string } {
-	function getColor(code: string): tinycolor.Instance {
-		// ref
-		if (code[0] == '@') {
-			return getColor(theme.props[code.substr(1)]);
+function compile(theme: Theme): Record<string, string> {
+	function getColor(val: string): tinycolor.Instance {
+		// ref (prop)
+		if (val[0] === '@') {
+			return getColor(theme.props[val.substr(1)]);
+		}
+
+		// ref (const)
+		else if (val[0] === '$') {
+			return getColor(theme.props[val]);
 		}
 
 		// func
-		if (code[0] == ':') {
-			const parts = code.split('<');
+		else if (val[0] === ':') {
+			const parts = val.split('<');
 			const func = parts.shift().substr(1);
 			const arg = parseFloat(parts.shift());
 			const color = getColor(parts.join('<'));
@@ -87,13 +86,16 @@ function compile(theme: Theme): { [key: string]: string } {
 			}
 		}
 
-		return tinycolor(code);
+		// other case
+		return tinycolor(val);
 	}
 
 	const props = {};
 
 	for (const [k, v] of Object.entries(theme.props)) {
-		props[k] = genValue(getColor(v));
+		if (k.startsWith('$')) continue; // ignore const
+
+		props[k] = v.startsWith('"') ? v.replace(/^"\s*/, '') : genValue(getColor(v));
 	}
 
 	return props;

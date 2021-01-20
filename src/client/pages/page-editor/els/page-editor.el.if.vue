@@ -1,42 +1,41 @@
 <template>
-<x-container @remove="() => $emit('remove')" :draggable="true">
-	<template #header><fa :icon="faQuestion"/> {{ $t('_pages.blocks.if') }}</template>
+<XContainer @remove="() => $emit('remove')" :draggable="true">
+	<template #header><Fa :icon="faQuestion"/> {{ $ts._pages.blocks.if }}</template>
 	<template #func>
-		<button @click="add()">
-			<fa :icon="faPlus"/>
+		<button @click="add()" class="_button">
+			<Fa :icon="faPlus"/>
 		</button>
 	</template>
 
 	<section class="romcojzs">
-		<mk-select v-model="value.var">
-			<template #label>{{ $t('_pages.blocks._if.variable') }}</template>
-			<option v-for="v in aiScript.getVarsByType('boolean')" :value="v.name">{{ v.name }}</option>
-			<optgroup :label="$t('_pages.script.pageVariables')">
-				<option v-for="v in aiScript.getPageVarsByType('boolean')" :value="v">{{ v }}</option>
+		<MkSelect v-model:value="value.var">
+			<template #label>{{ $ts._pages.blocks._if.variable }}</template>
+			<option v-for="v in hpml.getVarsByType('boolean')" :value="v.name">{{ v.name }}</option>
+			<optgroup :label="$ts._pages.script.pageVariables">
+				<option v-for="v in hpml.getPageVarsByType('boolean')" :value="v">{{ v }}</option>
 			</optgroup>
-			<optgroup :label="$t('_pages.script.enviromentVariables')">
-				<option v-for="v in aiScript.getEnvVarsByType('boolean')" :value="v">{{ v }}</option>
+			<optgroup :label="$ts._pages.script.enviromentVariables">
+				<option v-for="v in hpml.getEnvVarsByType('boolean')" :value="v">{{ v }}</option>
 			</optgroup>
-		</mk-select>
+		</MkSelect>
 
-		<x-blocks class="children" v-model="value.children" :ai-script="aiScript"/>
+		<XBlocks class="children" v-model:value="value.children" :hpml="hpml"/>
 	</section>
-</x-container>
+</XContainer>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent, defineAsyncComponent } from 'vue';
 import { v4 as uuid } from 'uuid';
 import { faPlus, faQuestion } from '@fortawesome/free-solid-svg-icons';
-import i18n from '../../../i18n';
 import XContainer from '../page-editor.container.vue';
-import MkSelect from '../../../components/ui/select.vue';
+import MkSelect from '@/components/ui/select.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
-	i18n,
-
+export default defineComponent({
 	components: {
-		XContainer, MkSelect
+		XContainer, MkSelect,
+		XBlocks: defineAsyncComponent(() => import('../page-editor.blocks.vue')),
 	},
 
 	inject: ['getPageBlockList'],
@@ -45,7 +44,7 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		aiScript: {
+		hpml: {
 			required: true,
 		},
 	},
@@ -56,20 +55,16 @@ export default Vue.extend({
 		};
 	},
 
-	beforeCreate() {
-		this.$options.components.XBlocks = require('../page-editor.blocks.vue').default
-	},
-
 	created() {
-		if (this.value.children == null) Vue.set(this.value, 'children', []);
-		if (this.value.var === undefined) Vue.set(this.value, 'var', null);
+		if (this.value.children == null) this.value.children = [];
+		if (this.value.var === undefined) this.value.var = null;
 	},
 
 	methods: {
 		async add() {
-			const { canceled, result: type } = await this.$root.dialog({
+			const { canceled, result: type } = await os.dialog({
 				type: null,
-				title: this.$t('_pages.chooseBlock'),
+				title: this.$ts._pages.chooseBlock,
 				select: {
 					groupedItems: this.getPageBlockList()
 				},

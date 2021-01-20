@@ -1,29 +1,43 @@
 <template>
-<div class="ujigsodd">
-	<mk-loading v-if="fetching"/>
-	<div class="stream" v-if="!fetching && images.length > 0">
-		<a v-for="(image, i) in images" :key="i"
-			class="img"
-			:style="`background-image: url(${thumbnail(image.file)})`"
-			:href="image.note | notePage"
-		></a>
+<MkContainer>
+	<template #header><Fa :icon="faImage" style="margin-right: 0.5em;"/>{{ $ts.images }}</template>
+	<div class="ujigsodd">
+		<MkLoading v-if="fetching"/>
+		<div class="stream" v-if="!fetching && images.length > 0">
+			<MkA v-for="image in images"
+				class="img"
+				:style="`background-image: url(${thumbnail(image.file)})`"
+				:to="notePage(image.note)"
+			></MkA>
+		</div>
+		<p class="empty" v-if="!fetching && images.length == 0">{{ $ts.nothing }}</p>
 	</div>
-	<p class="empty" v-if="!fetching && images.length == 0">{{ $t('no-photos') }}</p>
-</div>
+</MkContainer>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import i18n from '../../i18n';
-import { getStaticImageUrl } from '../../scripts/get-static-image-url';
+import { defineComponent } from 'vue';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+import { getStaticImageUrl } from '@/scripts/get-static-image-url';
+import notePage from '../../filters/note';
+import * as os from '@/os';
+import MkContainer from '@/components/ui/container.vue';
 
-export default Vue.extend({
-	i18n,
-	props: ['user'],
+export default defineComponent({
+	components: {
+		MkContainer,
+	},
+	props: {
+		user: {
+			type: Object,
+			required: true
+		},
+	},
 	data() {
 		return {
 			fetching: true,
-			images: []
+			images: [],
+			faImage
 		};
 	},
 	mounted() {
@@ -34,10 +48,10 @@ export default Vue.extend({
 			'image/apng',
 			'image/vnd.mozilla.apng',
 		];
-		this.$root.api('users/notes', {
+		os.api('users/notes', {
 			userId: this.user.id,
 			fileType: image,
-			excludeNsfw: !this.$store.state.device.alwaysShowNsfw,
+			excludeNsfw: this.$store.state.nsfw !== 'ignore',
 			limit: 9,
 		}).then(notes => {
 			for (const note of notes) {
@@ -55,22 +69,23 @@ export default Vue.extend({
 	},
 	methods: {
 		thumbnail(image: any): string {
-			return this.$store.state.device.disableShowingAnimatedImages
+			return this.$store.state.disableShowingAnimatedImages
 				? getStaticImageUrl(image.thumbnailUrl)
 				: image.thumbnailUrl;
 		},
+		notePage
 	},
 });
 </script>
 
 <style lang="scss" scoped>
 .ujigsodd {
+	padding: 8px;
 
 	> .stream {
 		display: flex;
 		justify-content: center;
 		flex-wrap: wrap;
-		padding: 8px;
 
 		> .img {
 			flex: 1 1 33%;
@@ -81,7 +96,7 @@ export default Vue.extend({
 			background-size: cover;
 			background-clip: content-box;
 			border: solid 2px transparent;
-			border-radius: 4px;
+			border-radius: 6px;
 		}
 	}
 

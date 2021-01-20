@@ -7,7 +7,7 @@
 [![Dependencies](https://img.shields.io/david/syuilo/misskey.svg?style=for-the-badge&logo=npm)](https://david-dm.org/syuilo/misskey)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge&logo=github)](http://makeapullrequest.com)
 
-**A forever evolving, sophisticated microblogging platform.**
+**A forever evolving, interplanetary microblogging platform.**
 
 <p align="justify">
 <a href="https://join.misskey.page/">Misskey</a> is a decentralized microblogging platform born on Earth.
@@ -60,6 +60,8 @@ Organize and store your files! Want to post a picture you have already uploaded?
 ---
 
 ...and more! Experience Misskey with your own eyes at [misskey.io](https://misskey.io/) or join one of the [other instances](https://joinmisskey.github.io/) that are available.
+
+To recive updates of this repo, follow [@repo@misskey.io](https://misskey.io/@repo) on fediverse.
 
 Screen shots
 ----------------------------------------------------------------

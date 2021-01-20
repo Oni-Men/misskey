@@ -24,12 +24,6 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 			return el;
 		},
 
-		big(token) {
-			const el = doc.createElement('strong');
-			appendChildren(token.children, el);
-			return el;
-		},
-
 		small(token) {
 			const el = doc.createElement('small');
 			appendChildren(token.children, el);
@@ -48,26 +42,8 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 			return el;
 		},
 
-		motion(token) {
+		fn(token) {
 			const el = doc.createElement('i');
-			appendChildren(token.children, el);
-			return el;
-		},
-
-		spin(token) {
-			const el = doc.createElement('i');
-			appendChildren(token.children, el);
-			return el;
-		},
-
-		jump(token) {
-			const el = doc.createElement('i');
-			appendChildren(token.children, el);
-			return el;
-		},
-
-		flip(token) {
-			const el = doc.createElement('span');
 			appendChildren(token.children, el);
 			return el;
 		},
@@ -75,7 +51,7 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 		blockCode(token) {
 			const pre = doc.createElement('pre');
 			const inner = doc.createElement('code');
-			inner.innerHTML = token.node.props.code;
+			inner.textContent = token.node.props.code;
 			pre.appendChild(inner);
 			return pre;
 		},
@@ -149,12 +125,6 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 			return el;
 		},
 
-		title(token) {
-			const el = doc.createElement('h1');
-			appendChildren(token.children, el);
-			return el;
-		},
-
 		text(token) {
 			const el = doc.createElement('span');
 			const nodes = (token.node.props.text as string).split(/\r\n|\r|\n/).map(x => doc.createTextNode(x) as Node);
@@ -175,7 +145,7 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 
 		search(token) {
 			const a = doc.createElement('a');
-			a.href = `https://www.google.com/?#q=${token.node.props.query}`;
+			a.href = `https://www.google.com/search?q=${token.node.props.query}`;
 			a.textContent = token.node.props.content;
 			return a;
 		}

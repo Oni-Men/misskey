@@ -1,11 +1,11 @@
 <template>
-<div class="mk-poll" :data-done="closed || isVoted">
+<div class="tivcixzd" :class="{ done: closed || isVoted }">
 	<ul>
 		<li v-for="(choice, i) in poll.choices" :key="i" @click="vote(i)" :class="{ voted: choice.voted }">
 			<div class="backdrop" :style="{ 'width': `${showResult ? (choice.votes / total * 100) : 0}%` }"></div>
 			<span>
-				<template v-if="choice.isVoted"><fa :icon="faCheck"/></template>
-				<mfm :text="choice.text" :plain="true" :custom-emojis="note.emojis"/>
+				<template v-if="choice.isVoted"><Fa :icon="faCheck"/></template>
+				<Mfm :text="choice.text" :plain="true" :custom-emojis="note.emojis"/>
 				<span class="votes" v-if="showResult">({{ $t('_poll.votesCount', { n: choice.votes }) }})</span>
 			</span>
 		</li>
@@ -13,22 +13,21 @@
 	<p>
 		<span>{{ $t('_poll.totalVotes', { n: total }) }}</span>
 		<span> · </span>
-		<a v-if="!closed && !isVoted" @click="toggleShowResult">{{ showResult ? $t('_poll.vote') : $t('_poll.showResult') }}</a>
-		<span v-if="isVoted">{{ $t('_poll.voted') }}</span>
-		<span v-else-if="closed">{{ $t('_poll.closed') }}</span>
+		<a v-if="!closed && !isVoted" @click="toggleShowResult">{{ showResult ? $ts._poll.vote : $ts._poll.showResult }}</a>
+		<span v-if="isVoted">{{ $ts._poll.voted }}</span>
+		<span v-else-if="closed">{{ $ts._poll.closed }}</span>
 		<span v-if="remaining > 0"> · {{ timer }}</span>
 	</p>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
-import i18n from '../i18n';
 import { sum } from '../../prelude/array';
+import * as os from '@/os';
 
-export default Vue.extend({
-	i18n,
+export default defineComponent({
 	props: {
 		note: {
 			type: Object,
@@ -54,9 +53,9 @@ export default Vue.extend({
 		},
 		timer(): string {
 			return this.$t(
-				this.remaining > 86400 ? '_poll.remainingDays' :
-				this.remaining > 3600 ? '_poll.remainingHours' :
-				this.remaining > 60 ? '_poll.remainingMinutes' : '_poll.remainingSeconds', {
+				this.remaining >= 86400 ? '_poll.remainingDays' :
+				this.remaining >= 3600 ? '_poll.remainingHours' :
+				this.remaining >= 60 ? '_poll.remainingMinutes' : '_poll.remainingSeconds', {
 					s: Math.floor(this.remaining % 60),
 					m: Math.floor(this.remaining / 60) % 60,
 					h: Math.floor(this.remaining / 3600) % 24,
@@ -87,7 +86,7 @@ export default Vue.extend({
 		},
 		vote(id) {
 			if (this.closed || !this.poll.multiple && this.poll.choices.some(c => c.isVoted)) return;
-			this.$root.api('notes/polls/vote', {
+			os.api('notes/polls/vote', {
 				noteId: this.note.id,
 				choice: id
 			}).then(() => {
@@ -99,7 +98,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-.mk-poll {
+.tivcixzd {
 	> ul {
 		display: block;
 		margin: 0;
@@ -111,7 +110,6 @@ export default Vue.extend({
 			position: relative;
 			margin: 4px 0;
 			padding: 4px 8px;
-			width: 100%;
 			border: solid 1px var(--divider);
 			border-radius: 4px;
 			overflow: hidden;
@@ -156,7 +154,7 @@ export default Vue.extend({
 		}
 	}
 
-	&[data-done] {
+	&.done {
 		> ul > li {
 			cursor: default;
 

@@ -1,14 +1,24 @@
 <template>
-<div>
-	<div ref="chart"></div>
-</div>
+<MkContainer>
+	<template #header><Fa :icon="faChartBar" style="margin-right: 0.5em;"/>{{ $ts.activity }}</template>
+
+	<div style="padding: 8px;">
+		<div ref="chart"></div>
+	</div>
+</MkContainer>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import ApexCharts from 'apexcharts';
+import { faChartBar } from '@fortawesome/free-solid-svg-icons';
+import * as os from '@/os';
+import MkContainer from '@/components/ui/container.vue';
 
-export default Vue.extend({
+export default defineComponent({
+	components: {
+		MkContainer,
+	},
 	props: {
 		user: {
 			type: Object,
@@ -24,11 +34,12 @@ export default Vue.extend({
 		return {
 			fetching: true,
 			data: [],
-			peak: null
+			peak: null,
+			faChartBar,
 		};
 	},
 	mounted() {
-		this.$root.api('charts/user/notes', {
+		os.api('charts/user/notes', {
 			userId: this.user.id,
 			span: 'day',
 			limit: this.limit

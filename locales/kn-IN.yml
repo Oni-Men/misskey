@@ -40,6 +40,7 @@ sendMessage: "ಸಂದೇಶ ಕಳುಹಿಸು"
 copyUsername: "ಬಳಕೆಹೆಸರು ನಕಲಿಸು"
 reply: "ಉತ್ತರಿಸು"
 loadMore: "ಇನ್ನಷ್ಟು ನೋಡು"
+showMore: "ಇನ್ನಷ್ಟು ನೋಡು"
 youGotNewFollower: "ಹಿಂಬಾಲಿಸಿದರು"
 receiveFollowRequest: "ಹಿಂಬಾಲನೆ ವಿನಂತಿ ಬಂದಿದೆ"
 followRequestAccepted: "ಹಿಂಬಾಲನೆ ವಿನಂತಿ ಸ್ವೀಕರಿಸಲಾಯಿತು"
@@ -54,6 +55,10 @@ driveFileDeleteConfirm: "\"{name}\" ಕಡತವನ್ನು ಅಳಿಸಲು 
 unfollowConfirm: "{name}ಅನ್ನು ಹಿಂಬಾಲಿಸದಿರುವುದೇ?"
 instances: "ನಿದರ್ಶನ"
 remove: "ಅಳಿಸು"
+smtpUser: "ಬಳಕೆಹೆಸರು"
+smtpPass: "ಗುಪ್ತಪದ"
+_mfm:
+  search: "ಹುಡುಕು"
 _sfx:
   notification: "ಅಧಿಸೂಚನೆಗಳು"
 _widgets:
@@ -63,3 +68,10 @@ _cw:
   show: "ಇನ್ನಷ್ಟು ನೋಡು"
 _profile:
   username: "ಬಳಕೆಹೆಸರು"
+_notification:
+  youWereFollowed: "ಹಿಂಬಾಲಿಸಿದರು"
+_deck:
+  _columns:
+    notifications: "ಅಧಿಸೂಚನೆಗಳು"
+    tl: "ಸಮಯಸಾಲು"
+    mentions: "ಹೆಸರಿಸಿದ"

@@ -1,16 +1,17 @@
 <template>
 <div class="fpezltsf" :class="{ warn }">
-	<i v-if="warn"><fa :icon="faExclamationTriangle"/></i>
-	<i v-else><fa :icon="faInfoCircle"/></i>
+	<i v-if="warn"><Fa :icon="faExclamationTriangle"/></i>
+	<i v-else><Fa :icon="faInfoCircle"/></i>
 	<slot></slot>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import { faInfoCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import * as os from '@/os';
 
-export default Vue.extend({
+export default defineComponent({
 	props: {
 		warn: {
 			type: Boolean,
@@ -33,7 +34,7 @@ export default Vue.extend({
 	font-size: 90%;
 	background: var(--infoBg);
 	color: var(--infoFg);
-	border-radius: 5px;
+	border-radius: var(--radius);
 
 	&.warn {
 		background: var(--infoWarnBg);

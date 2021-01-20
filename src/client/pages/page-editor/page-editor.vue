@@ -1,113 +1,120 @@
 <template>
-<div>
-	<div class="gwbmwxkm _panel">
-		<header>
-			<div class="title"><fa :icon="faStickyNote"/> {{ readonly ? $t('_pages.readPage') : pageId ? $t('_pages.editPage') : $t('_pages.newPage') }}</div>
-			<div class="buttons">
-				<button class="_button" @click="del()" v-if="!readonly"><fa :icon="faTrashAlt"/></button>
-				<button class="_button" @click="() => showOptions = !showOptions"><fa :icon="faCog"/></button>
-				<button class="_button" @click="save()" v-if="!readonly"><fa :icon="faSave"/></button>
-			</div>
-		</header>
+<div class="_section">
+	<div class="_content">
+		<MkA class="view" v-if="pageId" :to="`/@${ author.username }/pages/${ currentName }`"><Fa :icon="faExternalLinkSquareAlt"/> {{ $ts._pages.viewPage }}</MkA>
 
-		<section>
-			<router-link class="view" v-if="pageId" :to="`/@${ author.username }/pages/${ currentName }`"><fa :icon="faExternalLinkSquareAlt"/> {{ $t('_pages.viewPage') }}</router-link>
+		<div class="buttons" style="margin: 16px 0;">
+			<MkButton inline @click="save" primary class="save"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
+			<MkButton inline @click="duplicate" class="duplicate" v-if="pageId"><Fa :icon="faCopy"/> {{ $ts.duplicate }}</MkButton>
+			<MkButton inline @click="del" class="delete" v-if="pageId"><Fa :icon="faTrashAlt"/> {{ $ts.delete }}</MkButton>
+		</div>
 
-			<mk-input v-model="title">
-				<span>{{ $t('_pages.title') }}</span>
-			</mk-input>
+		<MkContainer :body-togglable="true" :expanded="true" class="_vMargin">
+			<template #header><Fa :icon="faCog"/> {{ $ts._pages.pageSetting }}</template>
+			<div class="_section">
+				<MkInput v-model:value="title">
+					<span>{{ $ts._pages.title }}</span>
+				</MkInput>
 
-			<template v-if="showOptions">
-				<mk-input v-model="summary">
-					<span>{{ $t('_pages.summary') }}</span>
-				</mk-input>
+				<MkInput v-model:value="summary">
+					<span>{{ $ts._pages.summary }}</span>
+				</MkInput>
 
-				<mk-input v-model="name">
+				<MkInput v-model:value="name">
 					<template #prefix>{{ url }}/@{{ author.username }}/pages/</template>
-					<span>{{ $t('_pages.url') }}</span>
-				</mk-input>
+					<span>{{ $ts._pages.url }}</span>
+				</MkInput>
 
-				<mk-switch v-model="alignCenter">{{ $t('_pages.alignCenter') }}</mk-switch>
+				<MkSwitch v-model:value="alignCenter">{{ $ts._pages.alignCenter }}</MkSwitch>
 
-				<mk-select v-model="font">
-					<template #label>{{ $t('_pages.font') }}</template>
-					<option value="serif">{{ $t('_pages.fontSerif') }}</option>
-					<option value="sans-serif">{{ $t('_pages.fontSansSerif') }}</option>
-				</mk-select>
+				<MkSelect v-model:value="font">
+					<template #label>{{ $ts._pages.font }}</template>
+					<option value="serif">{{ $ts._pages.fontSerif }}</option>
+					<option value="sans-serif">{{ $ts._pages.fontSansSerif }}</option>
+				</MkSelect>
 
-				<mk-switch v-model="hideTitleWhenPinned">{{ $t('_pages.hideTitleWhenPinned') }}</mk-switch>
+				<MkSwitch v-model:value="hideTitleWhenPinned">{{ $ts._pages.hideTitleWhenPinned }}</MkSwitch>
 
 				<div class="eyeCatch">
-					<mk-button v-if="eyeCatchingImageId == null && !readonly" @click="setEyeCatchingImage()"><fa :icon="faPlus"/> {{ $t('_pages.eyeCatchingImageSet') }}</mk-button>
+					<MkButton v-if="eyeCatchingImageId == null && !readonly" @click="setEyeCatchingImage"><Fa :icon="faPlus"/> {{ $ts._pages.eyeCatchingImageSet }}</MkButton>
 					<div v-else-if="eyeCatchingImage">
-						<img :src="eyeCatchingImage.url" :alt="eyeCatchingImage.name"/>
-						<mk-button @click="removeEyeCatchingImage()" v-if="!readonly"><fa :icon="faTrashAlt"/> {{ $t('_pages.eyeCatchingImageRemove') }}</mk-button>
+						<img :src="eyeCatchingImage.url" :alt="eyeCatchingImage.name" style="max-width: 100%;"/>
+						<MkButton @click="removeEyeCatchingImage()" v-if="!readonly"><Fa :icon="faTrashAlt"/> {{ $ts._pages.eyeCatchingImageRemove }}</MkButton>
 					</div>
 				</div>
-			</template>
+			</div>
+		</MkContainer>
 
-			<x-blocks class="content" v-model="content" :ai-script="aiScript"/>
+		<MkContainer :body-togglable="true" :expanded="true" class="_vMargin">
+			<template #header><Fa :icon="faStickyNote"/> {{ $ts._pages.contents }}</template>
+			<div class="_section">
+				<XBlocks class="content" v-model:value="content" :hpml="hpml"/>
 
-			<mk-button @click="add()" v-if="!readonly"><fa :icon="faPlus"/></mk-button>
-		</section>
+				<MkButton @click="add()" v-if="!readonly"><Fa :icon="faPlus"/></MkButton>
+			</div>
+		</MkContainer>
+
+		<MkContainer :body-togglable="true" class="_vMargin">
+			<template #header><Fa :icon="faMagic"/> {{ $ts._pages.variables }}</template>
+			<div class="qmuvgica">
+				<XDraggable tag="div" class="variables" v-show="variables.length > 0" v-model="variables" item-key="name" handle=".drag-handle" :group="{ name: 'variables' }" animation="150" swap-threshold="0.5">
+					<template #item="{element}">
+						<XVariable
+							:value="element"
+							:removable="true"
+							@remove="() => removeVariable(element)"
+							:hpml="hpml"
+							:name="element.name"
+							:title="element.name"
+							:draggable="true"
+						/>
+					</template>
+				</XDraggable>
+
+				<MkButton @click="addVariable()" class="add" v-if="!readonly"><Fa :icon="faPlus"/></MkButton>
+			</div>
+		</MkContainer>
+
+		<MkContainer :body-togglable="true" :expanded="true" class="_vMargin">
+			<template #header><Fa :icon="faCode"/> {{ $ts.script }}</template>
+			<div>
+				<MkTextarea class="_code" v-model:value="script"/>
+			</div>
+		</MkContainer>
 	</div>
-
-	<mk-container :body-togglable="true">
-		<template #header><fa :icon="faMagic"/> {{ $t('_pages.variables') }}</template>
-		<div class="qmuvgica">
-			<x-draggable tag="div" class="variables" v-show="variables.length > 0" :list="variables" handle=".drag-handle" :group="{ name: 'variables' }" animation="150" swap-threshold="0.5">
-				<x-variable v-for="variable in variables"
-					:value="variable"
-					:removable="true"
-					@input="v => updateVariable(v)"
-					@remove="() => removeVariable(variable)"
-					:key="variable.name"
-					:ai-script="aiScript"
-					:name="variable.name"
-					:title="variable.name"
-					:draggable="true"
-				/>
-			</x-draggable>
-
-			<mk-button @click="addVariable()" class="add" v-if="!readonly"><fa :icon="faPlus"/></mk-button>
-		</div>
-	</mk-container>
-
-	<mk-container :body-togglable="true" :expanded="false">
-		<template #header><fa :icon="faCode"/> {{ $t('_pages.inspector') }}</template>
-		<div style="padding:0 32px 32px 32px;">
-			<mk-textarea :value="JSON.stringify(content, null, 2)" readonly tall>{{ $t('_pages.content') }}</mk-textarea>
-			<mk-textarea :value="JSON.stringify(variables, null, 2)" readonly tall>{{ $t('_pages.variables') }}</mk-textarea>
-		</div>
-	</mk-container>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import * as XDraggable from 'vuedraggable';
-import { faICursor, faPlus, faMagic, faCog, faCode, faExternalLinkSquareAlt } from '@fortawesome/free-solid-svg-icons';
+import { defineComponent, defineAsyncComponent, computed } from 'vue';
+import 'prismjs';
+import { highlight, languages } from 'prismjs/components/prism-core';
+import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/themes/prism-okaidia.css';
+import 'vue-prism-editor/dist/prismeditor.min.css';
+import { faICursor, faPlus, faMagic, faCog, faCode, faExternalLinkSquareAlt, faPencilAlt, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { faSave, faStickyNote, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import { v4 as uuid } from 'uuid';
-import i18n from '../../i18n';
 import XVariable from './page-editor.script-block.vue';
 import XBlocks from './page-editor.blocks.vue';
-import MkTextarea from '../../components/ui/textarea.vue';
-import MkContainer from '../../components/ui/container.vue';
-import MkButton from '../../components/ui/button.vue';
-import MkSelect from '../../components/ui/select.vue';
-import MkSwitch from '../../components/ui/switch.vue';
-import MkInput from '../../components/ui/input.vue';
-import { blockDefs } from '../../scripts/aiscript/index';
-import { ASTypeChecker } from '../../scripts/aiscript/type-checker';
-import { url } from '../../config';
-import { collectPageVars } from '../../scripts/collect-page-vars';
+import MkTextarea from '@/components/ui/textarea.vue';
+import MkContainer from '@/components/ui/container.vue';
+import MkButton from '@/components/ui/button.vue';
+import MkSelect from '@/components/ui/select.vue';
+import MkSwitch from '@/components/ui/switch.vue';
+import MkInput from '@/components/ui/input.vue';
+import { blockDefs } from '@/scripts/hpml/index';
+import { HpmlTypeChecker } from '@/scripts/hpml/type-checker';
+import { url } from '@/config';
+import { collectPageVars } from '@/scripts/collect-page-vars';
+import * as os from '@/os';
+import { selectFile } from '@/scripts/select-file';
 
-export default Vue.extend({
-	i18n,
-
+export default defineComponent({
 	components: {
-		XDraggable, XVariable, XBlocks, MkTextarea, MkContainer, MkButton, MkSelect, MkSwitch, MkInput
+		XDraggable: defineAsyncComponent(() => import('vuedraggable').then(x => x.default)),
+		XVariable, XBlocks, MkTextarea, MkContainer, MkButton, MkSelect, MkSwitch, MkInput,
 	},
 
 	props: {
@@ -127,7 +134,14 @@ export default Vue.extend({
 
 	data() {
 		return {
-			author: this.$store.state.i,
+			INFO: computed(() => this.initPageId ? {
+				title: this.$ts._pages.editPage,
+				icon: faPencilAlt,
+			} : {
+				title: this.$ts._pages.newPage,
+				icon: faPencilAlt,
+			}),
+			author: this.$i,
 			readonly: false,
 			page: null,
 			pageId: null,
@@ -142,10 +156,10 @@ export default Vue.extend({
 			alignCenter: false,
 			hideTitleWhenPinned: false,
 			variables: [],
-			aiScript: null,
-			showOptions: false,
+			hpml: null,
+			script: '',
 			url,
-			faPlus, faICursor, faSave, faStickyNote, faMagic, faCog, faTrashAlt, faExternalLinkSquareAlt, faCode
+			faPlus, faICursor, faSave, faStickyNote, faMagic, faCog, faTrashAlt, faExternalLinkSquareAlt, faCode, faCopy
 		};
 	},
 
@@ -154,7 +168,7 @@ export default Vue.extend({
 			if (this.eyeCatchingImageId == null) {
 				this.eyeCatchingImage = null;
 			} else {
-				this.eyeCatchingImage = await this.$root.api('drive/files/show', {
+				this.eyeCatchingImage = await os.api('drive/files/show', {
 					fileId: this.eyeCatchingImageId,
 				});
 			}
@@ -162,22 +176,22 @@ export default Vue.extend({
 	},
 
 	async created() {
-		this.aiScript = new ASTypeChecker();
+		this.hpml = new HpmlTypeChecker();
 
 		this.$watch('variables', () => {
-			this.aiScript.variables = this.variables;
+			this.hpml.variables = this.variables;
 		}, { deep: true });
 
 		this.$watch('content', () => {
-			this.aiScript.pageVars = collectPageVars(this.content);
+			this.hpml.pageVars = collectPageVars(this.content);
 		}, { deep: true });
 
 		if (this.initPageId) {
-			this.page = await this.$root.api('pages/show', {
+			this.page = await os.api('pages/show', {
 				pageId: this.initPageId,
 			});
 		} else if (this.initPageName && this.initUser) {
-			this.page = await this.$root.api('pages/show', {
+			this.page = await os.api('pages/show', {
 				name: this.initPageName,
 				username: this.initUser,
 			});
@@ -192,6 +206,7 @@ export default Vue.extend({
 			this.currentName = this.page.name;
 			this.summary = this.page.summary;
 			this.font = this.page.font;
+			this.script = this.page.script;
 			this.hideTitleWhenPinned = this.page.hideTitleWhenPinned;
 			this.alignCenter = this.page.alignCenter;
 			this.content = this.page.content;
@@ -216,83 +231,102 @@ export default Vue.extend({
 	},
 
 	methods: {
-		save() {
-			const options = {
+		getSaveOptions() {
+			return {
 				title: this.title.trim(),
 				name: this.name.trim(),
 				summary: this.summary,
 				font: this.font,
+				script: this.script,
 				hideTitleWhenPinned: this.hideTitleWhenPinned,
 				alignCenter: this.alignCenter,
 				content: this.content,
 				variables: this.variables,
 				eyeCatchingImageId: this.eyeCatchingImageId,
 			};
+		},
+
+		save() {
+			const options = this.getSaveOptions();
 
 			const onError = err => {
 				if (err.id == '3d81ceae-475f-4600-b2a8-2bc116157532') {
 					if (err.info.param == 'name') {
-						this.$root.dialog({
+						os.dialog({
 							type: 'error',
-							title: this.$t('_pages.invalidNameTitle'),
-							text: this.$t('_pages.invalidNameText')
+							title: this.$ts._pages.invalidNameTitle,
+							text: this.$ts._pages.invalidNameText
 						});
 					}
 				} else if (err.code == 'NAME_ALREADY_EXISTS') {
-					this.$root.dialog({
+					os.dialog({
 						type: 'error',
-						text: this.$t('_pages.nameAlreadyExists')
+						text: this.$ts._pages.nameAlreadyExists
 					});
 				}
 			};
 
 			if (this.pageId) {
 				options.pageId = this.pageId;
-				this.$root.api('pages/update', options)
+				os.api('pages/update', options)
 				.then(page => {
 					this.currentName = this.name.trim();
-					this.$root.dialog({
+					os.dialog({
 						type: 'success',
-						text: this.$t('_pages.updated')
+						text: this.$ts._pages.updated
 					});
 				}).catch(onError);
 			} else {
-				this.$root.api('pages/create', options)
+				os.api('pages/create', options)
 				.then(page => {
 					this.pageId = page.id;
 					this.currentName = this.name.trim();
-					this.$root.dialog({
+					os.dialog({
 						type: 'success',
-						text: this.$t('_pages.created')
+						text: this.$ts._pages.created
 					});
-					this.$router.push(`/my/pages/edit/${this.pageId}`);
+					this.$router.push(`/pages/edit/${this.pageId}`);
 				}).catch(onError);
 			}
 		},
 
 		del() {
-			this.$root.dialog({
+			os.dialog({
 				type: 'warning',
 				text: this.$t('removeAreYouSure', { x: this.title.trim() }),
 				showCancelButton: true
 			}).then(({ canceled }) => {
 				if (canceled) return;
-				this.$root.api('pages/delete', {
+				os.api('pages/delete', {
 					pageId: this.pageId,
 				}).then(() => {
-					this.$root.dialog({
+					os.dialog({
 						type: 'success',
-						text: this.$t('_pages.deleted')
+						text: this.$ts._pages.deleted
 					});
-					this.$router.push(`/my/pages`);
+					this.$router.push(`/pages`);
 				});
 			});
 		},
 
+		duplicate() {
+			this.title = this.title + ' - copy';
+			this.name = this.name + '-copy';
+			os.api('pages/create', this.getSaveOptions()).then(page => {
+				this.pageId = page.id;
+				this.currentName = this.name.trim();
+				os.dialog({
+					type: 'success',
+					text: this.$ts._pages.created
+				});
+				this.$router.push(`/pages/edit/${this.pageId}`);
+			});
+		},
+
 		async add() {
-			const { canceled, result: type } = await this.$root.dialog({
+			const { canceled, result: type } = await os.dialog({
 				type: null,
-				title: this.$t('_pages.chooseBlock'),
+				title: this.$ts._pages.chooseBlock,
 				select: {
 					groupedItems: this.getPageBlockList()
 				},
@@ -305,8 +339,8 @@ export default Vue.extend({
 		},
 
 		async addVariable() {
-			let { canceled, result: name } = await this.$root.dialog({
-				title: this.$t('_pages.enterVariableName'),
+			let { canceled, result: name } = await os.dialog({
+				title: this.$ts._pages.enterVariableName,
 				input: {
 					type: 'text',
 				},
@@ -316,10 +350,10 @@ export default Vue.extend({
 
 			name = name.trim();
 
-			if (this.aiScript.isUsedName(name)) {
-				this.$root.dialog({
+			if (this.hpml.isUsedName(name)) {
+				os.dialog({
 					type: 'error',
-					text: this.$t('_pages.variableNameIsAlreadyUsed')
+					text: this.$ts._pages.variableNameIsAlreadyUsed
 				});
 				return;
 			}
@@ -329,39 +363,36 @@ export default Vue.extend({
 		},
 
 		removeVariable(v) {
-			const i = this.variables.findIndex(x => x.name === v.name);
-			const newValue = [
-				...this.variables.slice(0, i),
-				...this.variables.slice(i + 1)
-			];
-			this.variables = newValue;
+			this.variables = this.variables.filter(x => x.name !== v.name);
 		},
 
 		getPageBlockList() {
 			return [{
-				label: this.$t('_pages.contentBlocks'),
+				label: this.$ts._pages.contentBlocks,
 				items: [
-					{ value: 'section', text: this.$t('_pages.blocks.section') },
-					{ value: 'text', text: this.$t('_pages.blocks.text') },
-					{ value: 'image', text: this.$t('_pages.blocks.image') },
-					{ value: 'textarea', text: this.$t('_pages.blocks.textarea') },
+					{ value: 'section', text: this.$ts._pages.blocks.section },
+					{ value: 'text', text: this.$ts._pages.blocks.text },
+					{ value: 'image', text: this.$ts._pages.blocks.image },
+					{ value: 'textarea', text: this.$ts._pages.blocks.textarea },
+					{ value: 'note', text: this.$ts._pages.blocks.note },
+					{ value: 'canvas', text: this.$ts._pages.blocks.canvas },
 				]
 			}, {
-				label: this.$t('_pages.inputBlocks'),
+				label: this.$ts._pages.inputBlocks,
 				items: [
-					{ value: 'button', text: this.$t('_pages.blocks.button') },
-					{ value: 'radioButton', text: this.$t('_pages.blocks.radioButton') },
-					{ value: 'textInput', text: this.$t('_pages.blocks.textInput') },
-					{ value: 'textareaInput', text: this.$t('_pages.blocks.textareaInput') },
-					{ value: 'numberInput', text: this.$t('_pages.blocks.numberInput') },
-					{ value: 'switch', text: this.$t('_pages.blocks.switch') },
-					{ value: 'counter', text: this.$t('_pages.blocks.counter') }
+					{ value: 'button', text: this.$ts._pages.blocks.button },
+					{ value: 'radioButton', text: this.$ts._pages.blocks.radioButton },
+					{ value: 'textInput', text: this.$ts._pages.blocks.textInput },
+					{ value: 'textareaInput', text: this.$ts._pages.blocks.textareaInput },
+					{ value: 'numberInput', text: this.$ts._pages.blocks.numberInput },
+					{ value: 'switch', text: this.$ts._pages.blocks.switch },
+					{ value: 'counter', text: this.$ts._pages.blocks.counter }
 				]
 			}, {
-				label: this.$t('_pages.specialBlocks'),
+				label: this.$ts._pages.specialBlocks,
 				items: [
-					{ value: 'if', text: this.$t('_pages.blocks.if') },
-					{ value: 'post', text: this.$t('_pages.blocks.post') }
+					{ value: 'if', text: this.$ts._pages.blocks.if },
+					{ value: 'post', text: this.$ts._pages.blocks.post }
 				]
 			}];
 		},
@@ -381,7 +412,7 @@ export default Vue.extend({
 				} else {
 					list.push({
 						category: block.category,
-						label: this.$t(`script.categories.${block.category}`),
+						label: this.$t(`_pages.script.categories.${block.category}`),
 						items: [{
 							value: block.type,
 							text: this.$t(`_pages.script.blocks.${block.type}`)
@@ -393,7 +424,7 @@ export default Vue.extend({
 			const userFns = this.variables.filter(x => x.type === 'fn');
 			if (userFns.length > 0) {
 				list.unshift({
-					label: this.$t(`script.categories.fn`),
+					label: this.$t(`_pages.script.categories.fn`),
 					items: userFns.map(v => ({
 						value: 'fn:' + v.name,
 						text: v.name
@@ -404,28 +435,28 @@ export default Vue.extend({
 			return list;
 		},
 
-		setEyeCatchingImage() {
-			this.$chooseDriveFile({
-				multiple: false
-			}).then(file => {
+		setEyeCatchingImage(e) {
+			selectFile(e.currentTarget || e.target, null, false).then(file => {
 				this.eyeCatchingImageId = file.id;
 			});
 		},
 
 		removeEyeCatchingImage() {
 			this.eyeCatchingImageId = null;
-		}
+		},
+
+		highlighter(code) {
+			return highlight(code, languages.js, 'javascript');
+		},
 	}
 });
 </script>
 
 <style lang="scss" scoped>
 .gwbmwxkm {
-	margin-bottom: var(--margin);
+	position: relative;
 
 	> header {
-		background: var(--faceHeader);
-
 		> .title {
 			z-index: 1;
 			margin: 0;
@@ -433,8 +464,7 @@ export default Vue.extend({
 			line-height: 42px;
 			font-size: 0.9em;
 			font-weight: bold;
-			color: var(--faceHeaderText);
-			box-shadow: 0 var(--lineWidth) rgba(#000, 0.07);
+			box-shadow: 0 1px rgba(#000, 0.07);
 
 			> [data-icon] {
 				margin-right: 6px;

@@ -1,34 +1,33 @@
 <template>
-<x-container @remove="() => $emit('remove')" :draggable="true">
-	<template #header><fa :icon="faStickyNote"/> {{ value.title }}</template>
+<XContainer @remove="() => $emit('remove')" :draggable="true">
+	<template #header><Fa :icon="faStickyNote"/> {{ value.title }}</template>
 	<template #func>
-		<button @click="rename()">
-			<fa :icon="faPencilAlt"/>
+		<button @click="rename()" class="_button">
+			<Fa :icon="faPencilAlt"/>
 		</button>
-		<button @click="add()">
-			<fa :icon="faPlus"/>
+		<button @click="add()" class="_button">
+			<Fa :icon="faPlus"/>
 		</button>
 	</template>
 
 	<section class="ilrvjyvi">
-		<x-blocks class="children" v-model="value.children" :ai-script="aiScript"/>
+		<XBlocks class="children" v-model:value="value.children" :hpml="hpml"/>
 	</section>
-</x-container>
+</XContainer>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent, defineAsyncComponent } from 'vue';
 import { v4 as uuid } from 'uuid';
 import { faPlus, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { faStickyNote } from '@fortawesome/free-regular-svg-icons';
-import i18n from '../../../i18n';
 import XContainer from '../page-editor.container.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
-	i18n,
-
+export default defineComponent({
 	components: {
-		XContainer
+		XContainer,
+		XBlocks: defineAsyncComponent(() => import('../page-editor.blocks.vue')),
 	},
 
 	inject: ['getPageBlockList'],
@@ -37,7 +36,7 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		aiScript: {
+		hpml: {
 			required: true,
 		},
 	},
@@ -48,13 +47,9 @@ export default Vue.extend({
 		};
 	},
 
-	beforeCreate() {
-		this.$options.components.XBlocks = require('../page-editor.blocks.vue').default
-	},
-
 	created() {
-		if (this.value.title == null) Vue.set(this.value, 'title', null);
-		if (this.value.children == null) Vue.set(this.value, 'children', []);
+		if (this.value.title == null) this.value.title = null;
+		if (this.value.children == null) this.value.children = [];
 	},
 
 	mounted() {
@@ -65,7 +60,7 @@ export default Vue.extend({
 
 	methods: {
 		async rename() {
-			const { canceled, result: title } = await this.$root.dialog({
+			const { canceled, result: title } = await os.dialog({
 				title: 'Enter title',
 				input: {
 					type: 'text',
@@ -78,9 +73,9 @@ export default Vue.extend({
 		},
 
 		async add() {
-			const { canceled, result: type } = await this.$root.dialog({
+			const { canceled, result: type } = await os.dialog({
 				type: null,
-				title: this.$t('_pages.chooseBlock'),
+				title: this.$ts._pages.chooseBlock,
 				select: {
 					groupedItems: this.getPageBlockList()
 				},

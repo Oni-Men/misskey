@@ -1,14 +1,15 @@
 <template>
 <div>
-	<mk-button class="kudkigyw" @click="click()" :primary="value.primary">{{ script.interpolate(value.text) }}</mk-button>
+	<MkButton class="kudkigyw" @click="click()" :primary="value.primary">{{ hpml.interpolate(value.text) }}</MkButton>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import MkButton from '../ui/button.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
+export default defineComponent({
 	components: {
 		MkButton
 	},
@@ -16,33 +17,35 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		script: {
+		hpml: {
 			required: true
 		}
 	},
 	methods: {
 		click() {
 			if (this.value.action === 'dialog') {
-				this.script.eval();
-				this.$root.dialog({
-					text: this.script.interpolate(this.value.content)
+				this.hpml.eval();
+				os.dialog({
+					text: this.hpml.interpolate(this.value.content)
 				});
 			} else if (this.value.action === 'resetRandom') {
-				this.script.aiScript.updateRandomSeed(Math.random());
-				this.script.eval();
+				this.hpml.updateRandomSeed(Math.random());
+				this.hpml.eval();
 			} else if (this.value.action === 'pushEvent') {
-				this.$root.api('page-push', {
-					pageId: this.script.page.id,
+				os.api('page-push', {
+					pageId: this.hpml.page.id,
 					event: this.value.event,
 					...(this.value.var ? {
-						var: this.script.vars[this.value.var]
+						var: this.hpml.vars[this.value.var]
 					} : {})
 				});
 
-				this.$root.dialog({
+				os.dialog({
 					type: 'success',
-					text: this.script.interpolate(this.value.message)
+					text: this.hpml.interpolate(this.value.message)
 				});
+			} else if (this.value.action === 'callAiScript') {
+				this.hpml.callAiScript(this.value.fn);
 			}
 		}
 	}

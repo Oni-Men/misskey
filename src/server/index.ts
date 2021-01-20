@@ -23,10 +23,11 @@ import apiServer from './api';
 import { sum } from '../prelude/array';
 import Logger from '../services/logger';
 import { program } from '../argv';
-import { UserProfiles } from '../models';
+import { UserProfiles, Users } from '../models';
 import { networkChart } from '../services/chart';
 import { genAvatar } from '../misc/gen-avatar';
 import { createTemp } from '../misc/create-temp';
+import { publishMainStream } from '../services/stream';
 
 export const serverLogger = new Logger('server', 'gray', false);
 
@@ -90,10 +91,15 @@ router.get('/verify-email/:code', async ctx => {
 		ctx.body = 'Verify succeeded!';
 		ctx.status = 200;
 
-		UserProfiles.update({ userId: profile.userId }, {
+		await UserProfiles.update({ userId: profile.userId }, {
 			emailVerified: true,
 			emailVerifyCode: null
 		});
+
+		publishMainStream(profile.userId, 'meUpdated', await Users.pack(profile.userId, profile.userId, {
+			detail: true,
+			includeSecrets: true
+		}));
 	} else {
 		ctx.status = 404;
 	}

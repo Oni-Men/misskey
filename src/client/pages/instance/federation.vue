@@ -1,59 +1,74 @@
 <template>
-<div class="mk-federation">
-	<section class="_card instances">
-		<div class="_title"><fa :icon="faGlobe"/> {{ $t('instances') }}</div>
+<div>
+	<div class="_section">
 		<div class="_content">
+			<MkInput v-model:value="host" :debounce="true"><span>{{ $ts.host }}</span></MkInput>
 			<div class="inputs" style="display: flex;">
-				<mk-input v-model="host" :debounce="true" style="margin: 0; flex: 1;"><span>{{ $t('host') }}</span></mk-input>
-				<mk-select v-model="state" style="margin: 0;">
-					<option value="all">{{ $t('all') }}</option>
-					<option value="federating">{{ $t('federating') }}</option>
-					<option value="subscribing">{{ $t('subscribing') }}</option>
-					<option value="publishing">{{ $t('publishing') }}</option>
-					<option value="suspended">{{ $t('suspended') }}</option>
-					<option value="blocked">{{ $t('blocked') }}</option>
-					<option value="notResponding">{{ $t('notResponding') }}</option>
-				</mk-select>
+				<MkSelect v-model:value="state" style="margin: 0; flex: 1;">
+					<template #label>{{ $ts.state }}</template>
+					<option value="all">{{ $ts.all }}</option>
+					<option value="federating">{{ $ts.federating }}</option>
+					<option value="subscribing">{{ $ts.subscribing }}</option>
+					<option value="publishing">{{ $ts.publishing }}</option>
+					<option value="suspended">{{ $ts.suspended }}</option>
+					<option value="blocked">{{ $ts.blocked }}</option>
+					<option value="notResponding">{{ $ts.notResponding }}</option>
+				</MkSelect>
+				<MkSelect v-model:value="sort" style="margin: 0; flex: 1;">
+					<template #label>{{ $ts.sort }}</template>
+					<option value="+pubSub">{{ $ts.pubSub }} ({{ $ts.descendingOrder }})</option>
+					<option value="-pubSub">{{ $ts.pubSub }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+notes">{{ $ts.notes }} ({{ $ts.descendingOrder }})</option>
+					<option value="-notes">{{ $ts.notes }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+users">{{ $ts.users }} ({{ $ts.descendingOrder }})</option>
+					<option value="-users">{{ $ts.users }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+following">{{ $ts.following }} ({{ $ts.descendingOrder }})</option>
+					<option value="-following">{{ $ts.following }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+followers">{{ $ts.followers }} ({{ $ts.descendingOrder }})</option>
+					<option value="-followers">{{ $ts.followers }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+caughtAt">{{ $ts.caughtAt }} ({{ $ts.descendingOrder }})</option>
+					<option value="-caughtAt">{{ $ts.caughtAt }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+lastCommunicatedAt">{{ $ts.lastCommunicatedAt }} ({{ $ts.descendingOrder }})</option>
+					<option value="-lastCommunicatedAt">{{ $ts.lastCommunicatedAt }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+driveUsage">{{ $ts.driveUsage }} ({{ $ts.descendingOrder }})</option>
+					<option value="-driveUsage">{{ $ts.driveUsage }} ({{ $ts.ascendingOrder }})</option>
+					<option value="+driveFiles">{{ $ts.driveFiles }} ({{ $ts.descendingOrder }})</option>
+					<option value="-driveFiles">{{ $ts.driveFiles }} ({{ $ts.ascendingOrder }})</option>
+				</MkSelect>
 			</div>
 		</div>
+	</div>
+	<div class="_section">
 		<div class="_content">
-			<mk-pagination :pagination="pagination" #default="{items}" class="instances" ref="instances" :key="host + state">
-				<div class="instance" v-for="(instance, i) in items" :key="instance.id" @click="info(instance)">
-					<div class="host"><fa :icon="faCircle" class="indicator" :class="getStatus(instance)"/><b>{{ instance.host }}</b></div>
+			<MkPagination :pagination="pagination" #default="{items}" ref="instances" :key="host + state">
+				<div class="ppgwaixt _panel" v-for="instance in items" :key="instance.id" @click="info(instance)">
+					<div class="host"><Fa :icon="faCircle" class="indicator" :class="getStatus(instance)"/><b>{{ instance.host }}</b></div>
 					<div class="status">
-						<span class="sub" v-if="instance.followersCount > 0"><fa :icon="faCaretDown" class="icon"/>Sub</span>
-						<span class="sub" v-else><fa :icon="faCaretDown" class="icon"/>-</span>
-						<span class="pub" v-if="instance.followingCount > 0"><fa :icon="faCaretUp" class="icon"/>Pub</span>
-						<span class="pub" v-else><fa :icon="faCaretUp" class="icon"/>-</span>
-						<span class="lastCommunicatedAt"><fa :icon="faExchangeAlt" class="icon"/><mk-time :time="instance.lastCommunicatedAt"/></span>
-						<span class="latestStatus"><fa :icon="faTrafficLight" class="icon"/>{{ instance.latestStatus || '-' }}</span>
+						<span class="sub" v-if="instance.followersCount > 0"><Fa :icon="faCaretDown" class="icon"/>Sub</span>
+						<span class="sub" v-else><Fa :icon="faCaretDown" class="icon"/>-</span>
+						<span class="pub" v-if="instance.followingCount > 0"><Fa :icon="faCaretUp" class="icon"/>Pub</span>
+						<span class="pub" v-else><Fa :icon="faCaretUp" class="icon"/>-</span>
+						<span class="lastCommunicatedAt"><Fa :icon="faExchangeAlt" class="icon"/><MkTime :time="instance.lastCommunicatedAt"/></span>
+						<span class="latestStatus"><Fa :icon="faTrafficLight" class="icon"/>{{ instance.latestStatus || '-' }}</span>
 					</div>
 				</div>
-			</mk-pagination>
+			</MkPagination>
 		</div>
-	</section>
+	</div>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import { faGlobe, faCircle, faExchangeAlt, faCaretDown, faCaretUp, faTrafficLight } from '@fortawesome/free-solid-svg-icons';
-import i18n from '../../i18n';
-import MkButton from '../../components/ui/button.vue';
-import MkInput from '../../components/ui/input.vue';
-import MkSelect from '../../components/ui/select.vue';
-import MkPagination from '../../components/ui/pagination.vue';
-import MkInstanceInfo from './federation.instance.vue';
+import MkButton from '@/components/ui/button.vue';
+import MkInput from '@/components/ui/input.vue';
+import MkSelect from '@/components/ui/select.vue';
+import MkPagination from '@/components/ui/pagination.vue';
+import MkInstanceInfo from './instance.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
-	i18n,
-
-	metaInfo() {
-		return {
-			title: this.$t('federation') as string
-		};
-	},
-
+export default defineComponent({
 	components: {
 		MkButton,
 		MkInput,
@@ -63,6 +78,10 @@ export default Vue.extend({
 
 	data() {
 		return {
+			INFO: {
+				title: this.$ts.federation,
+				icon: faGlobe
+			},
 			host: '',
 			state: 'federating',
 			sort: '+pubSub',
@@ -104,60 +123,57 @@ export default Vue.extend({
 		},
 
 		info(instance) {
-			this.$root.new(MkInstanceInfo, {
+			os.popup(MkInstanceInfo, {
 				instance: instance
-			});
+			}, {}, 'closed');
 		}
 	}
 });
 </script>
 
 <style lang="scss" scoped>
-.mk-federation {
-	> .instances {
-		> ._content {
-			> .instances {
-				> .instance {
-					cursor: pointer;
+.ppgwaixt {
+	cursor: pointer;
+	padding: 16px;
 
-					> .host {
-						> .indicator {
-							font-size: 70%;
-							vertical-align: baseline;
-							margin-right: 4px;
+	&:hover {
+		color: var(--accent);
+	}
 
-							&.green {
-								color: #49c5ba;
-							}
+	> .host {
+		> .indicator {
+			font-size: 70%;
+			vertical-align: baseline;
+			margin-right: 4px;
 
-							&.yellow {
-								color: #c5a549;
-							}
+			&.green {
+				color: #49c5ba;
+			}
 
-							&.red {
-								color: #c54949;
-							}
+			&.yellow {
+				color: #c5a549;
+			}
 
-							&.off {
-								color: rgba(0, 0, 0, 0.5);
-							}
-						}
-					}
+			&.red {
+				color: #c54949;
+			}
 
-					> .status {
-						display: flex;
-						align-items: center;
-						font-size: 90%;
+			&.off {
+				color: rgba(0, 0, 0, 0.5);
+			}
+		}
+	}
 
-						> span {
-							flex: 1;
-							
-							> .icon {
-								margin-right: 6px;
-							}
-						}
-					}
-				}
+	> .status {
+		display: flex;
+		align-items: center;
+		font-size: 90%;
+
+		> span {
+			flex: 1;
+			
+			> .icon {
+				margin-right: 6px;
 			}
 		}
 	}

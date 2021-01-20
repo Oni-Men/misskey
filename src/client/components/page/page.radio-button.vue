@@ -1,15 +1,16 @@
 <template>
 <div>
-	<div>{{ script.interpolate(value.title) }}</div>
-	<mk-radio v-for="x in value.values" v-model="v" :value="x" :key="x">{{ x }}</mk-radio>
+	<div>{{ hpml.interpolate(value.title) }}</div>
+	<MkRadio v-for="x in value.values" v-model="v" :value="x" :key="x">{{ x }}</MkRadio>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import MkRadio from '../ui/radio.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
+export default defineComponent({
 	components: {
 		MkRadio
 	},
@@ -17,7 +18,7 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		script: {
+		hpml: {
 			required: true
 		}
 	},
@@ -28,8 +29,8 @@ export default Vue.extend({
 	},
 	watch: {
 		v() {
-			this.script.aiScript.updatePageVar(this.value.name, this.v);
-			this.script.eval();
+			this.hpml.updatePageVar(this.value.name, this.v);
+			this.hpml.eval();
 		}
 	}
 });

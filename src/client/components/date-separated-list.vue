@@ -1,25 +1,9 @@
-<template>
-<component :is="$store.state.device.animation ? 'transition-group' : 'div'" class="sqadhkmv" name="list" tag="div" :data-direction="direction" :data-reversed="reversed ? 'true' : 'false'">
-	<template v-for="(item, i) in items">
-		<slot :item="item" :i="i"></slot>
-		<div class="separator" :key="item.id + '_date'" v-if="showDate(i, item)">
-			<p class="date">
-				<span><fa class="icon" :icon="faAngleUp"/>{{ getDateText(item.createdAt) }}</span>
-				<span>{{ getDateText(items[i + 1].createdAt) }}<fa class="icon" :icon="faAngleDown"/></span>
-			</p>
-		</div>
-	</template>
-</component>
-</template>
-
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent, h, TransitionGroup } from 'vue';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
-import i18n from '../i18n';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-export default Vue.extend({
-	i18n,
-
+export default defineComponent({
 	props: {
 		items: {
 			type: Array,
@@ -37,41 +21,81 @@ export default Vue.extend({
 		}
 	},
 
-	data() {
-		return {
-			faAngleUp, faAngleDown
-		};
+	methods: {
+		focus() {
+			this.$slots.default[0].elm.focus();
+		}
 	},
 
-	methods: {
-		getDateText(time: string) {
+	render() {
+		const getDateText = (time: string) => {
 			const date = new Date(time).getDate();
 			const month = new Date(time).getMonth() + 1;
 			return this.$t('monthAndDay', {
 				month: month.toString(),
 				day: date.toString()
 			});
-		},
+		}
 
-		showDate(i, item) {
-			return (
+		return h(this.$store.state.animation ? TransitionGroup : 'div', this.$store.state.animation ? {
+			class: 'sqadhkmv _list_',
+			name: 'list',
+			tag: 'div',
+			'data-direction': this.direction,
+			'data-reversed': this.reversed ? 'true' : 'false',
+		} : {
+			class: 'sqadhkmv _list_',
+		}, this.items.map((item, i) => {
+			const el = this.$slots.default({
+				item: item
+			})[0];
+			if (el.key == null && item.id) el.key = item.id;
+
+			if (
 				i != this.items.length - 1 &&
 				new Date(item.createdAt).getDate() != new Date(this.items[i + 1].createdAt).getDate() &&
 				!item._prId_ &&
 				!this.items[i + 1]._prId_ &&
 				!item._featuredId_ &&
-				!this.items[i + 1]._featuredId_);
-		},
+				!this.items[i + 1]._featuredId_
+			) {
+				const separator = h('div', {
+					class: 'separator',
+					key: item.id + ':separator',
+				}, h('p', {
+					class: 'date'
+				}, [
+					h('span', [
+						h(FontAwesomeIcon, {
+							class: 'icon',
+							icon: faAngleUp,
+						}),
+						getDateText(item.createdAt)
+					]),
+					h('span', [
+						getDateText(this.items[i + 1].createdAt),
+						h(FontAwesomeIcon, {
+							class: 'icon',
+							icon: faAngleDown,
+						})
+					])
+				]));
 
-		focus() {
-			this.$slots.default[0].elm.focus();
-		}
-	}
+				return [el, separator];
+			} else {
+				return el;
+			}
+		}));
+	},
 });
 </script>
 
 <style lang="scss">
 .sqadhkmv {
+	> *:not(:last-child) {
+		margin-bottom: var(--margin);
+	}
+
 	> .list-move {
 		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 	}
@@ -81,14 +105,14 @@ export default Vue.extend({
 	}
 
 	&[data-direction="up"] {
-		> .list-enter {
+		> .list-enter-from {
 			opacity: 0;
 			transform: translateY(64px);
 		}
 	}
 
 	&[data-direction="down"] {
-		> .list-enter {
+		> .list-enter-from {
 			opacity: 0;
 			transform: translateY(-64px);
 		}
@@ -96,11 +120,10 @@ export default Vue.extend({
 }
 </style>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .sqadhkmv {
 	> .separator {
 		text-align: center;
-		background: var(--bg);
 
 		> .date {
 			display: inline-block;

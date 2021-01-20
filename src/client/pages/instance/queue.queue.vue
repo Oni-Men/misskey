@@ -1,11 +1,13 @@
 <template>
-<section class="_card mk-queue-queue">
+<section class="_section">
 	<div class="_title"><slot name="title"></slot></div>
-	<div class="_content status">
-		<div class="cell"><div class="label">Process</div>{{ activeSincePrevTick | number }}</div>
-		<div class="cell"><div class="label">Active</div>{{ active | number }}</div>
-		<div class="cell"><div class="label">Waiting</div>{{ waiting | number }}</div>
-		<div class="cell"><div class="label">Delayed</div>{{ delayed | number }}</div>
+	<div class="_content _table">
+		<div class="_row">
+			<div class="_cell"><div class="_label">Process</div>{{ number(activeSincePrevTick) }}</div>
+			<div class="_cell"><div class="_label">Active</div>{{ number(active) }}</div>
+			<div class="_cell"><div class="_label">Waiting</div>{{ number(waiting) }}</div>
+			<div class="_cell"><div class="_label">Delayed</div>{{ number(delayed) }}</div>
+		</div>
 	</div>
 	<div class="_content" style="margin-bottom: -8px;">
 		<canvas ref="chart"></canvas>
@@ -14,18 +16,18 @@
 		<div v-if="jobs.length > 0">
 			<div v-for="job in jobs" :key="job[0]">
 				<span>{{ job[0] }}</span>
-				<span style="margin-left: 8px; opacity: 0.7;">({{ job[1] | number }} jobs)</span>
+				<span style="margin-left: 8px; opacity: 0.7;">({{ number(job[1]) }} jobs)</span>
 			</div>
 		</div>
-		<span v-else style="opacity: 0.5;">{{ $t('noJobs') }}</span>
+		<span v-else style="opacity: 0.5;">{{ $ts.noJobs }}</span>
 	</div>
 </section>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import Chart from 'chart.js';
-import i18n from '../../i18n';
+import number from '../../filters/number';
 
 const alpha = (hex, a) => {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)!;
@@ -34,10 +36,9 @@ const alpha = (hex, a) => {
 	const b = parseInt(result[3], 16);
 	return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
+import * as os from '@/os';
 
-export default Vue.extend({
-	i18n,
-
+export default defineComponent({
 	props: {
 		domain: {
 			required: true
@@ -60,6 +61,9 @@ export default Vue.extend({
 
 	mounted() {
 		this.fetchJobs();
+
+		// TODO: var(--panel)の色が暗いか明るいかで判定する
+		const gridColor = this.$store.state.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
 		Chart.defaults.global.defaultFontColor = getComputedStyle(document.documentElement).getPropertyValue('--fg');
 
@@ -121,7 +125,9 @@ export default Vue.extend({
 				scales: {
 					xAxes: [{
 						gridLines: {
-							display: false
+							display: false,
+							color: gridColor,
+							zeroLineColor: gridColor,
 						},
 						ticks: {
 							display: false
@@ -129,6 +135,11 @@ export default Vue.extend({
 					}],
 					yAxes: [{
 						position: 'right',
+						gridLines: {
+							display: true,
+							color: gridColor,
+							zeroLineColor: gridColor,
+						},
 						ticks: {
 							display: false,
 						}
@@ -145,7 +156,7 @@ export default Vue.extend({
 		this.connection.on('statsLog', this.onStatsLog);
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		this.connection.off('stats', this.onStats);
 		this.connection.off('statsLog', this.onStatsLog);
 	},
@@ -172,33 +183,18 @@ export default Vue.extend({
 		},
 
 		onStatsLog(statsLog) {
-			for (const stats of statsLog.reverse()) {
+			for (const stats of [...statsLog].reverse()) {
 				this.onStats(stats);
 			}
 		},
 
 		fetchJobs() {
-			this.$root.api(this.domain === 'inbox' ? 'admin/queue/inbox-delayed' : this.domain === 'deliver' ? 'admin/queue/deliver-delayed' : null, {}).then(jobs => {
+			os.api(this.domain === 'inbox' ? 'admin/queue/inbox-delayed' : this.domain === 'deliver' ? 'admin/queue/deliver-delayed' : null, {}).then(jobs => {
 				this.jobs = jobs;
 			});
 		},
+
+		number
 	}
 });
 </script>
-
-<style lang="scss" scoped>
-.mk-queue-queue {
-	> .status {
-		display: flex;
-
-		> .cell {
-			flex: 1;
-
-			> .label {
-				font-size: 80%;
-				opacity: 0.7;
-			}
-		}
-	}
-}
-</style>

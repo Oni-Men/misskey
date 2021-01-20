@@ -57,6 +57,8 @@ export type Source = {
 	};
 
 	mediaProxy?: string;
+
+	signToActivityPubGet?: boolean;
 };
 
 /**

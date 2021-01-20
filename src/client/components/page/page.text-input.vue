@@ -1,14 +1,15 @@
 <template>
 <div>
-	<mk-input class="kudkigyw" v-model="v" type="text">{{ script.interpolate(value.text) }}</mk-input>
+	<MkInput class="kudkigyw" v-model:value="v" type="text">{{ hpml.interpolate(value.text) }}</MkInput>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import MkInput from '../ui/input.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
+export default defineComponent({
 	components: {
 		MkInput
 	},
@@ -16,7 +17,7 @@ export default Vue.extend({
 		value: {
 			required: true
 		},
-		script: {
+		hpml: {
 			required: true
 		}
 	},
@@ -27,8 +28,8 @@ export default Vue.extend({
 	},
 	watch: {
 		v() {
-			this.script.aiScript.updatePageVar(this.value.name, this.v);
-			this.script.eval();
+			this.hpml.updatePageVar(this.value.name, this.v);
+			this.hpml.eval();
 		}
 	}
 });

@@ -17,9 +17,9 @@ import packFeed from './feed';
 import { fetchMeta } from '../../misc/fetch-meta';
 import { genOpenapiSpec } from '../api/openapi/gen-spec';
 import config from '../../config';
-import { Users, Notes, Emojis, UserProfiles, Pages } from '../../models';
+import { Users, Notes, Emojis, UserProfiles, Pages, Channels, Clips } from '../../models';
 import parseAcct from '../../misc/acct/parse';
-import getNoteSummary from '../../misc/get-note-summary';
+import { getNoteSummary } from '../../misc/get-note-summary';
 import { ensure } from '../../prelude/ensure';
 import { getConnection } from 'typeorm';
 import redis from '../../db/redis';
@@ -58,7 +58,7 @@ const router = new Router();
 
 //#region static assets
 
-router.get('/assets/*', async ctx => {
+router.get('/assets/(.*)', async ctx => {
 	await send(ctx as any, ctx.path, {
 		root: client,
 		maxage: ms('7 days'),
@@ -110,7 +110,7 @@ router.get('/docs.json', async ctx => {
 		ctx.body = [];
 		return;
 	}
-	const paths = glob.sync(__dirname + `/../../../src/docs/*.${lang}.md`);
+	const paths = glob.sync(__dirname + `/../../../src/docs/${lang}/*.md`);
 	const docs: { path: string; title: string; }[] = [];
 	for (const path of paths) {
 		const md = fs.readFileSync(path, { encoding: 'utf8' });
@@ -188,7 +188,7 @@ router.get('/@:user.json', async ctx => {
 	}
 });
 
-//#region for crawlers
+//#region SSR (for crawlers)
 // User
 router.get(['/@:user', '/@:user/:sub'], async (ctx, next) => {
 	const { username, host } = parseAcct(ctx.params.user);
@@ -242,10 +242,13 @@ router.get('/notes/:note', async ctx => {
 
 	if (note) {
 		const _note = await Notes.pack(note);
+		const profile = await UserProfiles.findOne(note.userId).then(ensure);
 		const meta = await fetchMeta();
 		await ctx.render('note', {
 			note: _note,
-			summary: getNoteSummary(_note),
+			profile,
+			// TODO: Let locale changeable by instance setting
+			summary: getNoteSummary(_note, locales['ja-JP']),
 			instanceName: meta.name || 'Misskey',
 			icon: meta.iconUrl
 		});
@@ -279,9 +282,11 @@ router.get('/@:user/pages/:page', async ctx => {
 
 	if (page) {
 		const _page = await Pages.pack(page);
+		const profile = await UserProfiles.findOne(page.userId).then(ensure);
 		const meta = await fetchMeta();
 		await ctx.render('page', {
 			page: _page,
+			profile,
 			instanceName: meta.name || 'Misskey'
 		});
 
@@ -296,6 +301,53 @@ router.get('/@:user/pages/:page', async ctx => {
 
 	ctx.status = 404;
 });
+
+// Clip
+// TODO: 非publicなclipのハンドリング
+router.get('/clips/:clip', async ctx => {
+	const clip = await Clips.findOne({
+		id: ctx.params.clip,
+	});
+
+	if (clip) {
+		const _clip = await Clips.pack(clip);
+		const profile = await UserProfiles.findOne(clip.userId).then(ensure);
+		const meta = await fetchMeta();
+		await ctx.render('clip', {
+			clip: _clip,
+			profile,
+			instanceName: meta.name || 'Misskey'
+		});
+
+		ctx.set('Cache-Control', 'public, max-age=180');
+
+		return;
+	}
+
+	ctx.status = 404;
+});
+
+// Channel
+router.get('/channels/:channel', async ctx => {
+	const channel = await Channels.findOne({
+		id: ctx.params.channel,
+	});
+
+	if (channel) {
+		const _channel = await Channels.pack(channel);
+		const meta = await fetchMeta();
+		await ctx.render('channel', {
+			channel: _channel,
+			instanceName: meta.name || 'Misskey'
+		});
+
+		ctx.set('Cache-Control', 'public, max-age=180');
+
+		return;
+	}
+
+	ctx.status = 404;
+});
 //#endregion
 
 router.get('/info', async ctx => {
@@ -303,6 +355,9 @@ router.get('/info', async ctx => {
 	const emojis = await Emojis.find({
 		where: { host: null }
 	});
+
+	const proxyAccount = meta.proxyAccountId ? await Users.pack(meta.proxyAccountId).catch(() => null) : null;
+
 	await ctx.render('info', {
 		version: config.version,
 		machine: os.hostname(),
@@ -316,6 +371,7 @@ router.get('/info', async ctx => {
 		},
 		emojis: emojis,
 		meta: meta,
+		proxyAccountName: proxyAccount ? proxyAccount.username : null,
 		originalUsersCount: await Users.count({ host: null }),
 		originalNotesCount: await Notes.count({ userHost: null })
 	});
@@ -331,8 +387,14 @@ router.get('/flush', async ctx => {
 	await ctx.render('flush');
 });
 
+// streamingに非WebSocketリクエストが来た場合にbase htmlをキャシュ付きで返すと、Proxy等でそのパスがキャッシュされておかしくなる
+router.get('/streaming', async ctx => {
+	ctx.status = 503;
+	ctx.set('Cache-Control', 'private, max-age=0');
+});
+
 // Render base html for all requests
-router.get('*', async ctx => {
+router.get('(.*)', async ctx => {
 	const meta = await fetchMeta();
 	await ctx.render('base', {
 		img: meta.bannerUrl,

@@ -1,218 +1,283 @@
 <template>
-<div v-if="meta">
-	<portal to="icon"><fa :icon="faCog"/></portal>
-	<portal to="title">{{ $t('settings') }}</portal>
-
-	<section class="_card info">
-		<div class="_title"><fa :icon="faInfoCircle"/> {{ $t('basicInfo') }}</div>
+<div v-if="meta" class="_section">
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faInfoCircle"/> {{ $ts.basicInfo }}</div>
 		<div class="_content">
-			<mk-input v-model="name">{{ $t('instanceName') }}</mk-input>
-			<mk-textarea v-model="description">{{ $t('instanceDescription') }}</mk-textarea>
-			<mk-input v-model="iconUrl"><template #icon><fa :icon="faLink"/></template>{{ $t('iconUrl') }}</mk-input>
-			<mk-input v-model="bannerUrl"><template #icon><fa :icon="faLink"/></template>{{ $t('bannerUrl') }}</mk-input>
-			<mk-input v-model="tosUrl"><template #icon><fa :icon="faLink"/></template>{{ $t('tosUrl') }}</mk-input>
-			<mk-input v-model="maintainerName">{{ $t('maintainerName') }}</mk-input>
-			<mk-input v-model="maintainerEmail" type="email"><template #icon><fa :icon="faEnvelope"/></template>{{ $t('maintainerEmail') }}</mk-input>
+			<MkInput v-model:value="name">{{ $ts.instanceName }}</MkInput>
+			<MkTextarea v-model:value="description">{{ $ts.instanceDescription }}</MkTextarea>
+			<MkInput v-model:value="iconUrl"><template #icon><Fa :icon="faLink"/></template>{{ $ts.iconUrl }}</MkInput>
+			<MkInput v-model:value="bannerUrl"><template #icon><Fa :icon="faLink"/></template>{{ $ts.bannerUrl }}</MkInput>
+			<MkInput v-model:value="backgroundImageUrl"><template #icon><Fa :icon="faLink"/></template>{{ $ts.backgroundImageUrl }}</MkInput>
+			<MkInput v-model:value="logoImageUrl"><template #icon><Fa :icon="faLink"/></template>{{ $ts.logoImageUrl }}</MkInput>
+			<MkInput v-model:value="tosUrl"><template #icon><Fa :icon="faLink"/></template>{{ $ts.tosUrl }}</MkInput>
+			<MkInput v-model:value="maintainerName">{{ $ts.maintainerName }}</MkInput>
+			<MkInput v-model:value="maintainerEmail" type="email"><template #icon><Fa :icon="faEnvelope"/></template>{{ $ts.maintainerEmail }}</MkInput>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card info">
+	<MkInput v-model:value="pinnedClipId">{{ $ts.pinnedClipId }}</MkInput>
+
+	<section class="_card _vMargin">
 		<div class="_content">
-			<mk-input v-model="maxNoteTextLength" type="number" :save="() => save()" style="margin:0;"><template #icon><fa :icon="faPencilAlt"/></template>{{ $t('maxNoteTextLength') }}</mk-input>
+			<MkInput v-model:value="maxNoteTextLength" type="number" :save="() => save()"><template #icon><Fa :icon="faPencilAlt"/></template>{{ $ts.maxNoteTextLength }}</MkInput>
 		</div>
 		<div class="_content">
-			<mk-switch v-model="enableLocalTimeline" @change="save()">{{ $t('enableLocalTimeline') }}</mk-switch>
-			<mk-switch v-model="enableGlobalTimeline" @change="save()">{{ $t('enableGlobalTimeline') }}</mk-switch>
-			<mk-info>{{ $t('disablingTimelinesInfo') }}</mk-info>
+			<MkSwitch v-model:value="enableLocalTimeline" @update:value="save()">{{ $ts.enableLocalTimeline }}</MkSwitch>
+			<MkSwitch v-model:value="enableGlobalTimeline" @update:value="save()">{{ $ts.enableGlobalTimeline }}</MkSwitch>
+			<MkInfo>{{ $ts.disablingTimelinesInfo }}</MkInfo>
+		</div>
+		<div class="_content">
+			<MkSwitch v-model:value="useStarForReactionFallback" @update:value="save()">{{ $ts.useStarForReactionFallback }}</MkSwitch>
 		</div>
 	</section>
 
-	<section class="_card info">
-		<div class="_title"><fa :icon="faUser"/> {{ $t('registration') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faUser"/> {{ $ts.registration }}</div>
 		<div class="_content">
-			<mk-switch v-model="enableRegistration" @change="save()">{{ $t('enableRegistration') }}</mk-switch>
-			<mk-button v-if="!enableRegistration" @click="invite">{{ $t('invite') }}</mk-button>
+			<MkSwitch v-model:value="enableRegistration" @update:value="save()">{{ $ts.enableRegistration }}</MkSwitch>
+			<MkButton v-if="!enableRegistration" @click="invite">{{ $ts.invite }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faShieldAlt"/> {{ $t('recaptcha') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faShieldAlt"/> {{ $ts.hcaptcha }}</div>
 		<div class="_content">
-			<mk-switch v-model="enableRecaptcha">{{ $t('enableRecaptcha') }}</mk-switch>
+			<MkSwitch v-model:value="enableHcaptcha">{{ $ts.enableHcaptcha }}</MkSwitch>
+			<template v-if="enableHcaptcha">
+				<MkInput v-model:value="hcaptchaSiteKey" :disabled="!enableHcaptcha"><template #icon><Fa :icon="faKey"/></template>{{ $ts.hcaptchaSiteKey }}</MkInput>
+				<MkInput v-model:value="hcaptchaSecretKey" :disabled="!enableHcaptcha"><template #icon><Fa :icon="faKey"/></template>{{ $ts.hcaptchaSecretKey }}</MkInput>
+			</template>
+		</div>
+		<div class="_content" v-if="enableHcaptcha">
+			<header>{{ $ts.preview }}</header>
+			<captcha v-if="enableHcaptcha" provider="hcaptcha" :sitekey="hcaptchaSiteKey || '10000000-ffff-ffff-ffff-000000000001'"/>
+		</div>
+		<div class="_footer">
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
+		</div>
+	</section>
+
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faShieldAlt"/> {{ $ts.recaptcha }}</div>
+		<div class="_content">
+			<MkSwitch v-model:value="enableRecaptcha" ref="enableRecaptcha">{{ $ts.enableRecaptcha }}</MkSwitch>
 			<template v-if="enableRecaptcha">
-				<mk-input v-model="recaptchaSiteKey" :disabled="!enableRecaptcha"><template #icon><fa :icon="faKey"/></template>{{ $t('recaptchaSiteKey') }}</mk-input>
-				<mk-input v-model="recaptchaSecretKey" :disabled="!enableRecaptcha"><template #icon><fa :icon="faKey"/></template>{{ $t('recaptchaSecretKey') }}</mk-input>
+				<MkInput v-model:value="recaptchaSiteKey" :disabled="!enableRecaptcha"><template #icon><Fa :icon="faKey"/></template>{{ $ts.recaptchaSiteKey }}</MkInput>
+				<MkInput v-model:value="recaptchaSecretKey" :disabled="!enableRecaptcha"><template #icon><Fa :icon="faKey"/></template>{{ $ts.recaptchaSecretKey }}</MkInput>
 			</template>
 		</div>
 		<div class="_content" v-if="enableRecaptcha && recaptchaSiteKey">
-			<header>{{ $t('preview') }}</header>
-			<div ref="recaptcha" style="margin: 16px 0 0 0;" :key="recaptchaSiteKey"></div>
+			<header>{{ $ts.preview }}</header>
+			<captcha v-if="enableRecaptcha" provider="grecaptcha" :sitekey="recaptchaSiteKey"/>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faBolt"/> {{ $t('serviceworker') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faEnvelope" /> {{ $ts.emailConfig }}</div>
 		<div class="_content">
-			<mk-switch v-model="enableServiceWorker">{{ $t('enableServiceworker') }}<template #desc>{{ $t('serviceworkerInfo') }}</template></mk-switch>
+			<MkSwitch v-model:value="enableEmail" @update:value="save()">{{ $ts.enableEmail }}<template #desc>{{ $ts.emailConfigInfo }}</template></MkSwitch>
+			<MkInput v-model:value="email" type="email" :disabled="!enableEmail">{{ $ts.email }}</MkInput>
+			<div><b>{{ $ts.smtpConfig }}</b></div>
+			<div class="_inputs">
+				<MkInput v-model:value="smtpHost" :disabled="!enableEmail">{{ $ts.smtpHost }}</MkInput>
+				<MkInput v-model:value="smtpPort" type="number" :disabled="!enableEmail">{{ $ts.smtpPort }}</MkInput>
+			</div>
+			<div class="_inputs">
+				<MkInput v-model:value="smtpUser" :disabled="!enableEmail">{{ $ts.smtpUser }}</MkInput>
+				<MkInput v-model:value="smtpPass" type="password" :disabled="!enableEmail">{{ $ts.smtpPass }}</MkInput>
+			</div>
+			<MkInfo>{{ $ts.emptyToDisableSmtpAuth }}</MkInfo>
+			<MkSwitch v-model:value="smtpSecure" :disabled="!enableEmail">{{ $ts.smtpSecure }}<template #desc>{{ $ts.smtpSecureInfo }}</template></MkSwitch>
+			<div>
+			  <MkButton :disabled="!enableEmail" primary inline @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
+				<MkButton :disabled="!enableEmail" inline @click="testEmail()">{{ $ts.testEmail }}</MkButton>
+			</div>
+		</div>
+	</section>
+
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faBolt"/> {{ $ts.serviceworker }}</div>
+		<div class="_content">
+			<MkSwitch v-model:value="enableServiceWorker">{{ $ts.enableServiceworker }}<template #desc>{{ $ts.serviceworkerInfo }}</template></MkSwitch>
 			<template v-if="enableServiceWorker">
 				<div class="_inputs">
-					<mk-input v-model="swPublicKey" :disabled="!enableServiceWorker"><template #icon><fa :icon="faKey"/></template>Public key</mk-input>
-					<mk-input v-model="swPrivateKey" :disabled="!enableServiceWorker"><template #icon><fa :icon="faKey"/></template>Private key</mk-input>
+					<MkInput v-model:value="swPublicKey" :disabled="!enableServiceWorker"><template #icon><Fa :icon="faKey"/></template>Public key</MkInput>
+					<MkInput v-model:value="swPrivateKey" :disabled="!enableServiceWorker"><template #icon><Fa :icon="faKey"/></template>Private key</MkInput>
 				</div>
 			</template>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faThumbtack"/> {{ $t('pinnedUsers') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faThumbtack"/> {{ $ts.pinnedUsers }}</div>
 		<div class="_content">
-			<mk-textarea v-model="pinnedUsers">
-				<template #desc>{{ $t('pinnedUsersDescription') }} <button class="_textButton" @click="addPinUser">{{ $t('addUser') }}</button></template>
-			</mk-textarea>
+			<MkTextarea v-model:value="pinnedUsers">
+				<template #desc>{{ $ts.pinnedUsersDescription }} <button class="_textButton" @click="addPinUser">{{ $ts.addUser }}</button></template>
+			</MkTextarea>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faCloud"/> {{ $t('files') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faThumbtack"/> {{ $ts.pinnedPages }}</div>
 		<div class="_content">
-			<mk-switch v-model="cacheRemoteFiles">{{ $t('cacheRemoteFiles') }}<template #desc>{{ $t('cacheRemoteFilesDescription') }}</template></mk-switch>
-			<mk-switch v-model="proxyRemoteFiles">{{ $t('proxyRemoteFiles') }}<template #desc>{{ $t('proxyRemoteFilesDescription') }}</template></mk-switch>
-			<mk-input v-model="localDriveCapacityMb" type="number">{{ $t('driveCapacityPerLocalAccount') }}<template #suffix>MB</template><template #desc>{{ $t('inMb') }}</template></mk-input>
-			<mk-input v-model="remoteDriveCapacityMb" type="number" :disabled="!cacheRemoteFiles" style="margin-bottom: 0;">{{ $t('driveCapacityPerRemoteAccount') }}<template #suffix>MB</template><template #desc>{{ $t('inMb') }}</template></mk-input>
+			<MkTextarea v-model:value="pinnedPages">
+				<template #desc>{{ $ts.pinnedPagesDescription }}</template>
+			</MkTextarea>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faCloud"/> {{ $t('objectStorage') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faCloud"/> {{ $ts.files }}</div>
 		<div class="_content">
-			<mk-switch v-model="useObjectStorage">{{ $t('useObjectStorage') }}</mk-switch>
+			<MkSwitch v-model:value="cacheRemoteFiles">{{ $ts.cacheRemoteFiles }}<template #desc>{{ $ts.cacheRemoteFilesDescription }}</template></MkSwitch>
+			<MkSwitch v-model:value="proxyRemoteFiles">{{ $ts.proxyRemoteFiles }}<template #desc>{{ $ts.proxyRemoteFilesDescription }}</template></MkSwitch>
+			<MkInput v-model:value="localDriveCapacityMb" type="number">{{ $ts.driveCapacityPerLocalAccount }}<template #suffix>MB</template><template #desc>{{ $ts.inMb }}</template></MkInput>
+			<MkInput v-model:value="remoteDriveCapacityMb" type="number" :disabled="!cacheRemoteFiles">{{ $ts.driveCapacityPerRemoteAccount }}<template #suffix>MB</template><template #desc>{{ $ts.inMb }}</template></MkInput>
+		</div>
+		<div class="_footer">
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
+		</div>
+	</section>
+
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faCloud"/> {{ $ts.objectStorage }}</div>
+		<div class="_content">
+			<MkSwitch v-model:value="useObjectStorage">{{ $ts.useObjectStorage }}</MkSwitch>
 			<template v-if="useObjectStorage">
-				<mk-input v-model="objectStorageBaseUrl" :disabled="!useObjectStorage">{{ $t('objectStorageBaseUrl') }}<template #desc>{{ $t('objectStorageBaseUrlDesc') }}</template></mk-input>
+				<MkInput v-model:value="objectStorageBaseUrl" :disabled="!useObjectStorage">{{ $ts.objectStorageBaseUrl }}<template #desc>{{ $ts.objectStorageBaseUrlDesc }}</template></MkInput>
 				<div class="_inputs">
-					<mk-input v-model="objectStorageBucket" :disabled="!useObjectStorage">{{ $t('objectStorageBucket') }}<template #desc>{{ $t('objectStorageBucketDesc') }}</template></mk-input>
-					<mk-input v-model="objectStoragePrefix" :disabled="!useObjectStorage">{{ $t('objectStoragePrefix') }}<template #desc>{{ $t('objectStoragePrefixDesc') }}</template></mk-input>
+					<MkInput v-model:value="objectStorageBucket" :disabled="!useObjectStorage">{{ $ts.objectStorageBucket }}<template #desc>{{ $ts.objectStorageBucketDesc }}</template></MkInput>
+					<MkInput v-model:value="objectStoragePrefix" :disabled="!useObjectStorage">{{ $ts.objectStoragePrefix }}<template #desc>{{ $ts.objectStoragePrefixDesc }}</template></MkInput>
 				</div>
-				<mk-input v-model="objectStorageEndpoint" :disabled="!useObjectStorage">{{ $t('objectStorageEndpoint') }}<template #desc>{{ $t('objectStorageEndpointDesc') }}</template></mk-input>
+				<MkInput v-model:value="objectStorageEndpoint" :disabled="!useObjectStorage">{{ $ts.objectStorageEndpoint }}<template #desc>{{ $ts.objectStorageEndpointDesc }}</template></MkInput>
 				<div class="_inputs">
-					<mk-input v-model="objectStorageRegion" :disabled="!useObjectStorage">{{ $t('objectStorageRegion') }}<template #desc>{{ $t('objectStorageRegionDesc') }}</template></mk-input>
+					<MkInput v-model:value="objectStorageRegion" :disabled="!useObjectStorage">{{ $ts.objectStorageRegion }}<template #desc>{{ $ts.objectStorageRegionDesc }}</template></MkInput>
 				</div>
 				<div class="_inputs">
-					<mk-input v-model="objectStorageAccessKey" :disabled="!useObjectStorage"><template #icon><fa :icon="faKey"/></template>Access key</mk-input>
-					<mk-input v-model="objectStorageSecretKey" :disabled="!useObjectStorage"><template #icon><fa :icon="faKey"/></template>Secret key</mk-input>
+					<MkInput v-model:value="objectStorageAccessKey" :disabled="!useObjectStorage"><template #icon><Fa :icon="faKey"/></template>Access key</MkInput>
+					<MkInput v-model:value="objectStorageSecretKey" :disabled="!useObjectStorage"><template #icon><Fa :icon="faKey"/></template>Secret key</MkInput>
 				</div>
-				<mk-switch v-model="objectStorageUseSSL" :disabled="!useObjectStorage">{{ $t('objectStorageUseSSL') }}<template #desc>{{ $t('objectStorageUseSSLDesc') }}</template></mk-switch>
+				<MkSwitch v-model:value="objectStorageUseSSL" :disabled="!useObjectStorage">{{ $ts.objectStorageUseSSL }}<template #desc>{{ $ts.objectStorageUseSSLDesc }}</template></MkSwitch>
+				<MkSwitch v-model:value="objectStorageUseProxy" :disabled="!useObjectStorage">{{ $ts.objectStorageUseProxy }}<template #desc>{{ $ts.objectStorageUseProxyDesc }}</template></MkSwitch>
+				<MkSwitch v-model:value="objectStorageSetPublicRead" :disabled="!useObjectStorage">{{ $ts.objectStorageSetPublicRead }}</MkSwitch>
 			</template>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faGhost"/> {{ $t('proxyAccount') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faGhost"/> {{ $ts.proxyAccount }}</div>
 		<div class="_content">
-			<mk-input :value="proxyAccount ? proxyAccount.username : null" style="margin: 0;" disabled><template #prefix>@</template>{{ $t('proxyAccount') }}<template #desc>{{ $t('proxyAccountDescription') }}</template></mk-input>
-			<mk-button primary @click="chooseProxyAccount">{{ $t('chooseProxyAccount') }}</mk-button>
+			<MkInput :value="proxyAccount ? proxyAccount.username : null" disabled><template #prefix>@</template>{{ $ts.proxyAccount }}<template #desc>{{ $ts.proxyAccountDescription }}</template></MkInput>
+			<MkButton primary @click="chooseProxyAccount">{{ $ts.chooseProxyAccount }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faBan"/> {{ $t('blockedInstances') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faBan"/> {{ $ts.blockedInstances }}</div>
 		<div class="_content">
-			<mk-textarea v-model="blockedHosts">
-				<template #desc>{{ $t('blockedInstancesDescription') }}</template>
-			</mk-textarea>
+			<MkTextarea v-model:value="blockedHosts">
+				<template #desc>{{ $ts.blockedInstancesDescription }}</template>
+			</MkTextarea>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 
-	<section class="_card">
-		<div class="_title"><fa :icon="faShareAlt"/> {{ $t('integration') }}</div>
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faShareAlt"/> {{ $ts.integration }}</div>
 		<div class="_content">
-			<header><fa :icon="faTwitter"/> Twitter</header>
-			<mk-switch v-model="enableTwitterIntegration">{{ $t('enable') }}</mk-switch>
+			<header><Fa :icon="faTwitter"/> Twitter</header>
+			<MkSwitch v-model:value="enableTwitterIntegration">{{ $ts.enable }}</MkSwitch>
 			<template v-if="enableTwitterIntegration">
-				<mk-info>Callback URL: {{ `${url}/api/tw/cb` }}</mk-info>
-				<mk-input v-model="twitterConsumerKey" :disabled="!enableTwitterIntegration"><template #icon><fa :icon="faKey"/></template>Consumer Key</mk-input>
-				<mk-input v-model="twitterConsumerSecret" :disabled="!enableTwitterIntegration"><template #icon><fa :icon="faKey"/></template>Consumer Secret</mk-input>
+				<MkInfo>Callback URL: {{ `${url}/api/tw/cb` }}</MkInfo>
+				<MkInput v-model:value="twitterConsumerKey" :disabled="!enableTwitterIntegration"><template #icon><Fa :icon="faKey"/></template>Consumer Key</MkInput>
+				<MkInput v-model:value="twitterConsumerSecret" :disabled="!enableTwitterIntegration"><template #icon><Fa :icon="faKey"/></template>Consumer Secret</MkInput>
 			</template>
 		</div>
 		<div class="_content">
-			<header><fa :icon="faGithub"/> GitHub</header>
-			<mk-switch v-model="enableGithubIntegration">{{ $t('enable') }}</mk-switch>
+			<header><Fa :icon="faGithub"/> GitHub</header>
+			<MkSwitch v-model:value="enableGithubIntegration">{{ $ts.enable }}</MkSwitch>
 			<template v-if="enableGithubIntegration">
-				<mk-info>Callback URL: {{ `${url}/api/gh/cb` }}</mk-info>
-				<mk-input v-model="githubClientId" :disabled="!enableGithubIntegration"><template #icon><fa :icon="faKey"/></template>Client ID</mk-input>
-				<mk-input v-model="githubClientSecret" :disabled="!enableGithubIntegration"><template #icon><fa :icon="faKey"/></template>Client Secret</mk-input>
+				<MkInfo>Callback URL: {{ `${url}/api/gh/cb` }}</MkInfo>
+				<MkInput v-model:value="githubClientId" :disabled="!enableGithubIntegration"><template #icon><Fa :icon="faKey"/></template>Client ID</MkInput>
+				<MkInput v-model:value="githubClientSecret" :disabled="!enableGithubIntegration"><template #icon><Fa :icon="faKey"/></template>Client Secret</MkInput>
 			</template>
 		</div>
 		<div class="_content">
-			<header><fa :icon="faDiscord"/> Discord</header>
-			<mk-switch v-model="enableDiscordIntegration">{{ $t('enable') }}</mk-switch>
+			<header><Fa :icon="faDiscord"/> Discord</header>
+			<MkSwitch v-model:value="enableDiscordIntegration">{{ $ts.enable }}</MkSwitch>
 			<template v-if="enableDiscordIntegration">
-				<mk-info>Callback URL: {{ `${url}/api/dc/cb` }}</mk-info>
-				<mk-input v-model="discordClientId" :disabled="!enableDiscordIntegration"><template #icon><fa :icon="faKey"/></template>Client ID</mk-input>
-				<mk-input v-model="discordClientSecret" :disabled="!enableDiscordIntegration"><template #icon><fa :icon="faKey"/></template>Client Secret</mk-input>
+				<MkInfo>Callback URL: {{ `${url}/api/dc/cb` }}</MkInfo>
+				<MkInput v-model:value="discordClientId" :disabled="!enableDiscordIntegration"><template #icon><Fa :icon="faKey"/></template>Client ID</MkInput>
+				<MkInput v-model:value="discordClientSecret" :disabled="!enableDiscordIntegration"><template #icon><Fa :icon="faKey"/></template>Client Secret</MkInput>
 			</template>
 		</div>
 		<div class="_footer">
-			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
+		</div>
+	</section>
+
+	<section class="_card _vMargin">
+		<div class="_title"><Fa :icon="faArchway" /> Summaly Proxy</div>
+		<div class="_content">
+			<MkInput v-model:value="summalyProxy">URL</MkInput>
+			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $ts.save }}</MkButton>
 		</div>
 	</section>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { faPencilAlt, faShareAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faThumbtack, faUser, faShieldAlt, faKey, faBolt } from '@fortawesome/free-solid-svg-icons';
+import { defineComponent, defineAsyncComponent } from 'vue';
+import { faPencilAlt, faShareAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt, faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { faTwitter, faDiscord, faGithub } from '@fortawesome/free-brands-svg-icons';
-import MkButton from '../../components/ui/button.vue';
-import MkInput from '../../components/ui/input.vue';
-import MkTextarea from '../../components/ui/textarea.vue';
-import MkSwitch from '../../components/ui/switch.vue';
-import MkInfo from '../../components/ui/info.vue';
-import MkUserSelect from '../../components/user-select.vue';
-import { url } from '../../config';
-import i18n from '../../i18n';
+import MkButton from '@/components/ui/button.vue';
+import MkInput from '@/components/ui/input.vue';
+import MkTextarea from '@/components/ui/textarea.vue';
+import MkSwitch from '@/components/ui/switch.vue';
+import MkInfo from '@/components/ui/info.vue';
+import { url } from '@/config';
 import getAcct from '../../../misc/acct/render';
+import * as os from '@/os';
+import { fetchInstance } from '@/instance';
 
-export default Vue.extend({
-	i18n,
-
-	metaInfo() {
-		return {
-			title: this.$t('instance') as string
-		};
-	},
-
+export default defineComponent({
 	components: {
 		MkButton,
 		MkInput,
 		MkTextarea,
 		MkSwitch,
 		MkInfo,
+		Captcha: defineAsyncComponent(() => import('@/components/captcha.vue')),
 	},
 
 	data() {
 		return {
+			INFO: {
+				title: this.$ts.instance,
+				icon: faCog,
+			},
+			meta: null,
 			url,
 			proxyAccount: null,
 			proxyAccountId: null,
@@ -222,17 +287,26 @@ export default Vue.extend({
 			remoteDriveCapacityMb: 0,
 			blockedHosts: '',
 			pinnedUsers: '',
+			pinnedPages: '',
+			pinnedClipId: null,
 			maintainerName: null,
 			maintainerEmail: null,
 			name: null,
 			description: null,
-			tosUrl: null,
+			tosUrl: null as string | null,
+			enableEmail: false,
+			email: null,
 			bannerUrl: null,
 			iconUrl: null,
+			logoImageUrl: null,
+			backgroundImageUrl: null,
 			maxNoteTextLength: 0,
 			enableRegistration: false,
 			enableLocalTimeline: false,
 			enableGlobalTimeline: false,
+			enableHcaptcha: false,
+			hcaptchaSiteKey: null,
+			hcaptchaSecretKey: null,
 			enableRecaptcha: false,
 			recaptchaSiteKey: null,
 			recaptchaSecretKey: null,
@@ -249,6 +323,8 @@ export default Vue.extend({
 			objectStorageAccessKey: null,
 			objectStorageSecretKey: null,
 			objectStorageUseSSL: false,
+			objectStorageUseProxy: false,
+			objectStorageSetPublicRead: false,
 			enableTwitterIntegration: false,
 			twitterConsumerKey: null,
 			twitterConsumerSecret: null,
@@ -258,28 +334,38 @@ export default Vue.extend({
 			enableDiscordIntegration: false,
 			discordClientId: null,
 			discordClientSecret: null,
-			faPencilAlt, faTwitter, faDiscord, faGithub, faShareAlt, faTrashAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faEnvelope, faThumbtack, faUser, faShieldAlt, faKey, faBolt
+			useStarForReactionFallback: false,
+			smtpSecure: false,
+			smtpHost: '',
+			smtpPort: 0,
+			smtpUser: '',
+			smtpPass: '',
+			summalyProxy: '',
+			faPencilAlt, faTwitter, faDiscord, faGithub, faShareAlt, faTrashAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faEnvelope, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway
 		}
 	},
 
-	computed: {
-		meta() {
-			return this.$store.state.instance.meta;
-		},
-	},
+	async created() {
+		this.meta = await os.api('meta', { detail: true });
 
-	created() {
 		this.name = this.meta.name;
 		this.description = this.meta.description;
 		this.tosUrl = this.meta.tosUrl;
 		this.bannerUrl = this.meta.bannerUrl;
 		this.iconUrl = this.meta.iconUrl;
+		this.logoImageUrl = this.meta.logoImageUrl;
+		this.backgroundImageUrl = this.meta.backgroundImageUrl;
+		this.enableEmail = this.meta.enableEmail;
+		this.email = this.meta.email;
 		this.maintainerName = this.meta.maintainerName;
 		this.maintainerEmail = this.meta.maintainerEmail;
 		this.maxNoteTextLength = this.meta.maxNoteTextLength;
 		this.enableRegistration = !this.meta.disableRegistration;
 		this.enableLocalTimeline = !this.meta.disableLocalTimeline;
 		this.enableGlobalTimeline = !this.meta.disableGlobalTimeline;
+		this.enableHcaptcha = this.meta.enableHcaptcha;
+		this.hcaptchaSiteKey = this.meta.hcaptchaSiteKey;
+		this.hcaptchaSecretKey = this.meta.hcaptchaSecretKey;
 		this.enableRecaptcha = this.meta.enableRecaptcha;
 		this.recaptchaSiteKey = this.meta.recaptchaSiteKey;
 		this.recaptchaSecretKey = this.meta.recaptchaSecretKey;
@@ -290,6 +376,8 @@ export default Vue.extend({
 		this.remoteDriveCapacityMb = this.meta.driveCapacityPerRemoteUserMb;
 		this.blockedHosts = this.meta.blockedHosts.join('\n');
 		this.pinnedUsers = this.meta.pinnedUsers.join('\n');
+		this.pinnedPages = this.meta.pinnedPages.join('\n');
+		this.pinnedClipId = this.meta.pinnedClipId;
 		this.enableServiceWorker = this.meta.enableServiceWorker;
 		this.swPublicKey = this.meta.swPublickey;
 		this.swPrivateKey = this.meta.swPrivateKey;
@@ -303,6 +391,8 @@ export default Vue.extend({
 		this.objectStorageAccessKey = this.meta.objectStorageAccessKey;
 		this.objectStorageSecretKey = this.meta.objectStorageSecretKey;
 		this.objectStorageUseSSL = this.meta.objectStorageUseSSL;
+		this.objectStorageUseProxy = this.meta.objectStorageUseProxy;
+		this.objectStorageSetPublicRead = this.meta.objectStorageSetPublicRead;
 		this.enableTwitterIntegration = this.meta.enableTwitterIntegration;
 		this.twitterConsumerKey = this.meta.twitterConsumerKey;
 		this.twitterConsumerSecret = this.meta.twitterConsumerSecret;
@@ -312,47 +402,66 @@ export default Vue.extend({
 		this.enableDiscordIntegration = this.meta.enableDiscordIntegration;
 		this.discordClientId = this.meta.discordClientId;
 		this.discordClientSecret = this.meta.discordClientSecret;
+		this.useStarForReactionFallback = this.meta.useStarForReactionFallback;
+		this.smtpSecure = this.meta.smtpSecure;
+		this.smtpHost = this.meta.smtpHost;
+		this.smtpPort = this.meta.smtpPort;
+		this.smtpUser = this.meta.smtpUser;
+		this.smtpPass = this.meta.smtpPass;
+		this.summalyProxy = this.meta.summalyProxy;
 
 		if (this.proxyAccountId) {
-			this.$root.api('users/show', { userId: this.proxyAccountId }).then(proxyAccount => {
+			os.api('users/show', { userId: this.proxyAccountId }).then(proxyAccount => {
 				this.proxyAccount = proxyAccount;
 			});
 		}
 	},
 
 	mounted() {
-		const renderRecaptchaPreview = () => {
-			if (!(window as any).grecaptcha) return;
-			if (!this.$refs.recaptcha) return;
-			if (!this.recaptchaSiteKey) return;
-			(window as any).grecaptcha.render(this.$refs.recaptcha, {
-				sitekey: this.recaptchaSiteKey
-			});
-		};
-		window.onRecaotchaLoad = () => {
-			renderRecaptchaPreview();
-		};
-		const head = document.getElementsByTagName('head')[0];
-		const script = document.createElement('script');
-		script.setAttribute('src', 'https://www.google.com/recaptcha/api.js?onload=onRecaotchaLoad');
-		head.appendChild(script);
-		this.$watch('enableRecaptcha', () => {
-			renderRecaptchaPreview();
+		this.$watch('enableHcaptcha', () => {
+			if (this.enableHcaptcha && this.enableRecaptcha) {
+				os.dialog({
+					type: 'question', // warning だと間違って cancel するかもしれない
+					showCancelButton: true,
+					title: this.$ts.settingGuide,
+					text: this.$ts.avoidMultiCaptchaConfirm,
+				}).then(({ canceled }) => {
+					if (canceled) {
+						return;
+					}
+
+					this.enableRecaptcha = false;
+				});
+			}
 		});
-		this.$watch('recaptchaSiteKey', () => {
-			renderRecaptchaPreview();
+
+		this.$watch('enableRecaptcha', () => {
+			if (this.enableRecaptcha && this.enableHcaptcha) {
+				os.dialog({
+					type: 'question', // warning だと間違って cancel するかもしれない
+					showCancelButton: true,
+					title: this.$ts.settingGuide,
+					text: this.$ts.avoidMultiCaptchaConfirm,
+				}).then(({ canceled }) => {
+					if (canceled) {
+						return;
+					}
+
+					this.enableHcaptcha = false;
+				});
+			}
 		});
 	},
 
 	methods: {
 		invite() {
-			this.$root.api('admin/invite').then(x => {
-				this.$root.dialog({
+			os.api('admin/invite').then(x => {
+				os.dialog({
 					type: 'info',
 					text: x.code
 				});
 			}).catch(e => {
-				this.$root.dialog({
+				os.dialog({
 					type: 'error',
 					text: e
 				});
@@ -360,7 +469,7 @@ export default Vue.extend({
 		},
 
 		addPinUser() {
-			this.$root.new(MkUserSelect, {}).$once('selected', user => {
+			os.selectUser().then(user => {
 				this.pinnedUsers = this.pinnedUsers.trim();
 				this.pinnedUsers += '\n@' + getAcct(user);
 				this.pinnedUsers = this.pinnedUsers.trim();
@@ -368,26 +477,49 @@ export default Vue.extend({
 		},
 
 		chooseProxyAccount() {
-			this.$root.new(MkUserSelect, {}).$once('selected', user => {
+			os.selectUser().then(user => {
 				this.proxyAccount = user;
 				this.proxyAccountId = user.id;
 				this.save(true);
 			});
 		},
 
+		async testEmail() {
+			os.api('admin/send-email', {
+				to: this.maintainerEmail,
+				subject: 'Test email',
+				text: 'Yo'
+			}).then(x => {
+				os.dialog({
+					type: 'success',
+					splash: true
+				});
+			}).catch(e => {
+				os.dialog({
+					type: 'error',
+					text: e
+				});
+			});
+		},
+
 		save(withDialog = false) {
-			this.$root.api('admin/update-meta', {
+			os.api('admin/update-meta', {
 				name: this.name,
 				description: this.description,
 				tosUrl: this.tosUrl,
 				bannerUrl: this.bannerUrl,
 				iconUrl: this.iconUrl,
+				logoImageUrl: this.logoImageUrl,
+				backgroundImageUrl: this.backgroundImageUrl,
 				maintainerName: this.maintainerName,
 				maintainerEmail: this.maintainerEmail,
 				maxNoteTextLength: this.maxNoteTextLength,
 				disableRegistration: !this.enableRegistration,
 				disableLocalTimeline: !this.enableLocalTimeline,
 				disableGlobalTimeline: !this.enableGlobalTimeline,
+				enableHcaptcha: this.enableHcaptcha,
+				hcaptchaSiteKey: this.hcaptchaSiteKey,
+				hcaptchaSecretKey: this.hcaptchaSecretKey,
 				enableRecaptcha: this.enableRecaptcha,
 				recaptchaSiteKey: this.recaptchaSiteKey,
 				recaptchaSecretKey: this.recaptchaSecretKey,
@@ -398,6 +530,8 @@ export default Vue.extend({
 				remoteDriveCapacityMb: parseInt(this.remoteDriveCapacityMb, 10),
 				blockedHosts: this.blockedHosts.split('\n') || [],
 				pinnedUsers: this.pinnedUsers ? this.pinnedUsers.split('\n') : [],
+				pinnedPages: this.pinnedPages ? this.pinnedPages.split('\n') : [],
+				pinnedClipId: (this.pinnedClipId && this.pinnedClipId) != '' ? this.pinnedClipId : null,
 				enableServiceWorker: this.enableServiceWorker,
 				swPublicKey: this.swPublicKey,
 				swPrivateKey: this.swPrivateKey,
@@ -411,6 +545,8 @@ export default Vue.extend({
 				objectStorageAccessKey: this.objectStorageAccessKey ? this.objectStorageAccessKey : null,
 				objectStorageSecretKey: this.objectStorageSecretKey ? this.objectStorageSecretKey : null,
 				objectStorageUseSSL: this.objectStorageUseSSL,
+				objectStorageUseProxy: this.objectStorageUseProxy,
+				objectStorageSetPublicRead: this.objectStorageSetPublicRead,
 				enableTwitterIntegration: this.enableTwitterIntegration,
 				twitterConsumerKey: this.twitterConsumerKey,
 				twitterConsumerSecret: this.twitterConsumerSecret,
@@ -420,16 +556,22 @@ export default Vue.extend({
 				enableDiscordIntegration: this.enableDiscordIntegration,
 				discordClientId: this.discordClientId,
 				discordClientSecret: this.discordClientSecret,
+				enableEmail: this.enableEmail,
+				email: this.email,
+				smtpSecure: this.smtpSecure,
+				smtpHost: this.smtpHost,
+				smtpPort: this.smtpPort,
+				smtpUser: this.smtpUser,
+				smtpPass: this.smtpPass,
+				summalyProxy: this.summalyProxy,
+				useStarForReactionFallback: this.useStarForReactionFallback,
 			}).then(() => {
-				this.$store.dispatch('instance/fetch');
+				fetchInstance();
 				if (withDialog) {
-					this.$root.dialog({
-						type: 'success',
-						iconOnly: true, autoClose: true
-					});
+					os.success();
 				}
 			}).catch(e => {
-				this.$root.dialog({
+				os.dialog({
 					type: 'error',
 					text: e
 				});

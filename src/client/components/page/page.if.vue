@@ -1,18 +1,21 @@
 <template>
-<div v-show="script.vars[value.var]">
-	<x-block v-for="child in value.children" :value="child" :page="page" :script="script" :key="child.id" :h="h"/>
+<div v-show="hpml.vars[value.var]">
+	<XBlock v-for="child in value.children" :value="child" :page="page" :hpml="hpml" :key="child.id" :h="h"/>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent, defineAsyncComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
+	components: {
+		XBlock: defineAsyncComponent(() => import('./page.block.vue'))
+	},
 	props: {
 		value: {
 			required: true
 		},
-		script: {
+		hpml: {
 			required: true
 		},
 		page: {
@@ -21,9 +24,6 @@ export default Vue.extend({
 		h: {
 			required: true
 		}
-	},
-	beforeCreate() {
-		this.$options.components.XBlock = require('./page.block.vue').default;
 	},
 });
 </script>
